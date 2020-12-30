@@ -1,0 +1,99 @@
+#main{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: #1a1a1a;
+    z-index: 999;
+    .role-content{ 
+        width: 640px;
+        height: 440px;
+        background-color: #fff;
+        color: #000;
+        margin: 120px auto;
+        padding: 30px 40px;
+        .role-select{
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            cursor: pointer;
+        }
+        .role-confirm{
+            width: 20%;
+        }
+        .proctorColor{ border: 1px solid#4770FF; }
+        .patrolColor{ border: 1px solid #44B37E; }
+    }
+    .phont-content{
+        color: #fff;
+        margin: 80px 0px;
+        .video-source{
+            width: 320px;
+            max-width: 100%;
+            position: relative;
+            margin: 60px auto;
+            z-index: 9;
+        }
+        .wrap-lines {
+            .tp-lt, .tp-rt, .bt-lt, .bt-rt{
+                display: inline-block;
+                width: 80px;
+                height: 80px;
+                border: 2px solid #179CFF;
+                position: absolute;
+            }
+            .tp-lt{
+                border-right: none;
+                border-bottom: none;
+                left: -20px;
+                top: -20px
+            }
+            .tp-rt{
+                border-left: none;
+                border-bottom: none;
+                right: -20px;
+                top: -20px;
+            }
+            .bt-lt{
+                border-right: none;
+                border-top: none;
+                left: -20px;
+                bottom: -20px;
+            }
+            .bt-rt{
+                border-left: none;
+                border-top: none;
+                right: -20px;
+                bottom: -20px;
+            }
+        }
+        .device-select {
+            width: 250px;
+            border: 1px solid #fff;
+            color: #000;
+            padding: 4px;
+        }
+        .take-photo{
+            border: 1px solid #0195ff;
+            width: 60px;
+            height: 60px;
+            min-width: 60px;
+            position: relative;
+            background: 0 0;
+            border-radius: 50%;
+            i {
+                border-radius: 50%;
+                height: 50px;
+                width: 50px;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                -webkit-transform: translate(-50%,-50%);
+                transform: translate(-50%,-50%);
+                background-color: #0195ff;
+            }
+        }
+    }
+}
+

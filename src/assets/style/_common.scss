@@ -1,0 +1,54 @@
+a,a:hover,a:active,a:focus{
+    text-decoration: none;
+}
+ul,li{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+$themt-color: #0195ff;
+.txt-16px{ font-size: 16px; }
+.txt-18px{ font-size: 18px; }
+.txt-20px{ font-size: 20px; }
+.mt5{ margin-top: 5px !important; }
+.mb5{ margin-bottom: 5px !important; }
+.mt10{ margin-top: 10px !important; }
+.mb10{ margin-bottom: 10px !important; }
+.mt20{ margin-top: 20px !important; }
+.mb20{ margin-bottom: 20px !important; }
+.mr20{ margin-right: 20px !important; }
+.ml20{ margin-left: 20px !important; }
+.mt30{ margin-top: 30px !important; }
+.mb30{ margin-bottom: 30px !important; }
+.mt50{ margin-top: 50px !important; }
+.mb50{ margin-bottom: 50px !important; }
+.pt5{ padding-top: 5px !important; }
+.pb5{ padding-bottom: 5px !important; }
+.pt10{ padding-top: 10px !important; }
+.pb10{ padding-bottom: 10px !important; }
+.pt20{ padding-top: 20px !important; }
+.pb20{ padding-bottom: 20px !important; }
+.pt30{ padding-top: 30px !important; }
+.pb30{ padding-bottom: 30px !important; }
+label{ font-weight: normal; }
+.btn {
+    min-width: 110px;
+    padding: 7px 12px;
+    text-align: center;
+    cursor: pointer;
+}
+.btn-primary {
+    background-color:$themt-color;
+    border-color: $themt-color;
+    color: #fff;
+}
+.btn-gray{
+    background: #88949b;
+    color: #ffffff;
+    border: 1px solid #88949b;
+}
+.btn-gray:hover{
+    background: #9ba5ab;
+    color: #ffffff;
+    border: 1px solid #9ba5ab;
+}
