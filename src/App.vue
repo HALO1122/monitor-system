@@ -5,9 +5,10 @@
 </template>
 
 <style>
-body{
+html, body{
   padding: 0px;
   margin: 0px;
+  height: 100%;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -16,5 +17,6 @@ body{
   text-align: center;
   color: #2c3e50;
   font-size: 14px;
+  height: 100%;
 }
 </style>

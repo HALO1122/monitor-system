@@ -1,5 +1,5 @@
 {
-  "name": "monitor",
+  "name": "monitor-system",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,14 +8,20 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "adapterjs": "^0.15.5",
     "axios": "^0.20.0",
     "babel-plugin-component": "^1.1.1",
     "bootstrap": "^3.3.7",
     "core-js": "^3.6.5",
     "element-ui": "^2.13.2",
+    "eslint": "^7.16.0",
+    "eslint-plugin-vue": "^7.4.0",
     "qs": "^6.9.4",
+    "simple-peer": "^9.9.3",
+    "socket.io-client": "^3.0.4",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vue-socket.io": "^3.0.10",
     "vuex": "^3.4.0"
   },
   "devDependencies": {

@@ -7,9 +7,10 @@ ul,li{
     list-style: none;
 }
 $themt-color: #0195ff;
-.txt-16px{ font-size: 16px; }
+.txt-16px{ font-size: 16px !important; }
 .txt-18px{ font-size: 18px; }
 .txt-20px{ font-size: 20px; }
+.txt-24px{ font-size: 24px; }
 .mt5{ margin-top: 5px !important; }
 .mb5{ margin-bottom: 5px !important; }
 .mt10{ margin-top: 10px !important; }
@@ -26,8 +27,12 @@ $themt-color: #0195ff;
 .pb5{ padding-bottom: 5px !important; }
 .pt10{ padding-top: 10px !important; }
 .pb10{ padding-bottom: 10px !important; }
+.pl10{ padding-left: 10px !important; }
+.pr10{ padding-right: 10px !important; }
 .pt20{ padding-top: 20px !important; }
 .pb20{ padding-bottom: 20px !important; }
+.pl20{ padding-left: 20px !important; }
+.pr20{ padding-right: 20px !important; }
 .pt30{ padding-top: 30px !important; }
 .pb30{ padding-bottom: 30px !important; }
 label{ font-weight: normal; }

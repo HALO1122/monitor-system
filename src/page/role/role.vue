@@ -48,6 +48,7 @@
 
 <script>
 import { mapState } from "vuex";
+import { saveProctorPhoto } from "@/utils/api";
 import { getStream, gotDevices, getDevices, stopTrack } from '@/utils/index.js'
 export default {
     data() {
@@ -72,7 +73,7 @@ export default {
         toRoomWall() {
             let _this = this;
             if(_this.roleColor) {
-                _this.$router.push('/monitorwall?patrol')
+                _this.$router.push('/monitorwall?role=patrol')
             } else {
                 _this.sessionContent = false;
                 _this.getMedia()
@@ -104,18 +105,12 @@ export default {
                 this.vidoeOrPhoto = !this.vidoeOrPhoto;
                 this.takephoto = false;
             } else {
-                console.log(this.global.roomId)
-                console.log(this.global.teacherId)
-                this.$http({
-                    url: '/schedule/session/3163/room/'+roomId+'/monitor_room_photo/',
-                    method: "post",
-                    crossdomain: true,
-                    data: { "image_base64_str": this.photoData } 
-                }).then(() => {
+                let msg = {"image_base64_str": this.photoData}
+                saveProctorPhoto({ data: msg }).then(() => {
                     const videoElement = document.querySelector('#camera_view');
                     stopTrack(videoElement.srcObject);
                     stopTrack()
-                    this.$router.push('/monitorwall?proctor');
+                    this.$router.push('/monitorwall?role=proctor');
                 })
                 .catch(error => {
                     console.log(error);

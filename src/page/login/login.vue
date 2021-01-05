@@ -1,6 +1,7 @@
 <template>
     <div class="login">
-        <a class="help-center" href="http://docs.eztest.org" target="_blank"><i class="ez-icon-font txt-16px">&#xe606;</i>帮助中心</a>
+        <a class="help-center" href="http://docs.eztest.org" target="_blank">
+            <i class="ez-icon-font">&#xe65e;</i>&nbsp;帮助中心</a>
         <div class="login-logo"></div>
         <p class="wrap-title">—— &nbsp;&nbsp;监控系统&nbsp;&nbsp; ——</p>
 
@@ -18,6 +19,7 @@
 </template>
 
 <script>
+import { RoomLogin } from '@/utils/api.js'
 export default {
     data() {
         return{
@@ -46,13 +48,7 @@ export default {
                 superviser_name: this.id_name,
                 code: this.id_code
             };
-            this.$http({
-                url: "/schedule/session/3163/monitor_room_login/",
-                method: "post",
-                crossdomain: true,
-                data: msg 
-            })
-            .then(res => {
+            RoomLogin({ data:msg }).then(res => {
                 if (res.code == 200) {
                     this.$store.commit('SET_TOKEN', res.token);
                     this.$store.commit('ROOM_ID', res.room_id);

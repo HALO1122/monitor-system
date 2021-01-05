@@ -1,0 +1,264 @@
+@mixin flex-between{
+    display: flex;
+    justify-content: space-between;
+}
+.wrap-room-wall{
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    background-color: #1a1a1a;
+    .room-nav{
+        @include flex-between;
+        height: 60px;
+        line-height: 60px;
+        padding: 0px 16px 0px 12px;
+        background-color: #3A3B3F;
+        color: #ffffff;
+        position: relative;
+        .room-logo {
+            font-size: 16px;
+            background: url('../../assets/images/command-logo.png') no-repeat 20px 18px;
+            background-size: 70px 28px;
+            padding-left: 130px;
+            span {
+                padding: 0 12px;
+            }
+        }
+        .room-btn-toggle{
+            width: 90px;
+            background-color: #4F5054;
+            color: #ffffff;
+            border-radius: 8px;
+            height: 40px;
+            line-height: 40px;
+            margin-top: 10px;
+        }
+        .room-msg{
+            position: relative;
+            font-size: 14px;
+            display: flex;
+            span {
+                padding: 0 8px;
+            }
+            .room-refresh-msg{
+                border: 1px solid #6F7177;
+                margin: 9px;
+                line-height: 3;
+                padding: 0px 20px;
+                border-radius: 10px;
+            }
+            .arrow-handsup{
+                border-top: 6px solid transparent;
+                border-bottom: 6px solid #fff;
+                border-right: 6px solid transparent;
+                border-left: 6px solid transparent;
+                position: absolute;
+                top: 23px;
+                left: 17px;
+            }
+            .handsup-num{
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                text-align: center;
+                font-size: 12px;
+                background-color: #00CF71;
+                border-radius: 50%;
+                position: absolute;
+                top: -3px;
+                left: 20px;
+                z-index: 9;
+            }
+        }
+        .btn-end-proctor, .btn-end-proctor:hover{
+            min-width: 50px !important;
+            height: 28px;
+            line-height: 28px;
+            background-color: transparent;
+            border: 1px solid #FF5252;
+            color: #FF5252;
+            padding: 0px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .btn-refresh, .btn-refresh:hover{
+            min-width: 50px !important;
+            background-color: #838489;
+            height: 27px;
+            line-height: 10px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+    }
+    .room-video-tip{
+        width: 280px;
+        padding: 100px;
+        margin: 200px auto;
+        color: #fff;
+        border-top: 2px solid rgba(255,255,255,0.6);
+        text-align: center;
+        background-color: rgba(255,255,255,0.1);
+    }
+    .room-video-block{
+        width: 1750px;
+        height: 794px;
+        position: relative;
+        overflow: hidden;
+        padding: 40px 80px 60px;
+        color: #ffffff;
+        .nav-btnPrev, .nav-btnNext {
+            font-size: 60px;
+            position: absolute;
+            top: 20%;
+            z-index: 99;
+            i{
+                width: 100px;
+                height: 170px;
+                position: absolute;
+                background: url(../../assets/images/icons-sprite.png) no-repeat;
+                cursor: pointer;
+            }
+        }
+        .nav-btnPrev{
+            left: 10px; i{ background-position: -534px -30px; }
+        }
+        .nav-btnNext{
+            right: 110px; i{ background-position: -400px -30px; }
+        }
+        .room-video-list{
+            width: 2190px;
+            overflow: hidden;
+            position: absolute;
+            .room-video-li { 
+                position: relative; 
+                width: 420px;
+                margin: 0px 8px;
+                .video-entry-content{
+                    height: 315px;
+                    border-top-left-radius: 16px;
+                    border-top-right-radius: 16px;
+                    background-color: #3D3C41;
+                    a {
+                        width: 100%;
+                        img {width: 100%;}
+                        video{
+                            width: 100%;
+                            height: 315px;
+                            border-top-left-radius: 16px;
+                            border-top-right-radius: 16px;
+                        }
+                    }
+                    .video-tag-tip{
+                        @include flex-between;
+                        padding: 12px;
+                        font-size: 14px;
+                        .tag-monitor-status{ color: #FF5252 !important; }
+                        .tag-abnormal{
+                            background: #BF1E1E;
+                            border-radius: 15px;
+                            padding: 2px 8px;
+                        }
+                    }
+                }
+                .icon-event-content{
+                    background-color: #4C4E52;
+                    margin: 0px;
+                    padding: 8px 5px;
+                    text-align: left;
+                    span{ margin: 0px 6px; }
+                }
+                @mixin toggle-video{
+                    cursor: pointer;
+                    position: absolute;
+                    top: 180px;
+                    width: 0;
+                    height: 0;
+                    border-top: 8px solid transparent;
+                    border-bottom: 8px solid transparent;
+                    border-left: 8px solid #fff;
+                }
+                @mixin icon-spot{
+                    height: 96px;
+                    padding: 0px 30px;
+                    background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
+                    background-position: 12px 5px;
+                }
+                .entry-event-block{
+                    height: 350px;
+                    background-color: #3D3C41;
+                    position: relative;
+                    .double-video{
+                        @include toggle-video;
+                    }
+                    .entry-log {
+                        overflow-y: auto;
+                        li{
+                            @include flex-between;
+                            @include icon-spot;
+                            .login{ color: #0195FF ; }
+                            .monitor{ color: #B25656; padding: 3px 0px;}
+                            div{
+                                text-align: right;
+                                p{ margin: 2px 0px !important; }
+                            }
+                        }
+                    }
+                }
+                .eagle-event-block{
+                    display: none;
+
+                    position: relative;
+                    height: 350px;
+                    background-color: #3D3C41;
+                    .eagle-cut{
+                        padding: 5px 3px;
+                        background-color: #999;
+                        position: absolute;
+                        bottom: 9px;
+                        right: 166px;
+                    }
+                    .tag-monitor-status {
+                        position: absolute;
+                        left: 12px;
+                        color: #FF5252;
+                    }
+                    .eagle-show{
+                        position: relative;
+                        width: 248px;
+                        margin: 10px 0px 0px 6px;
+                        float: left;
+ 
+                    }
+                    .single-video{
+                        right: 150px;
+                        @include toggle-video;
+                    }
+                    .eagle-entry-log{
+                        width: 160px;
+                        overflow-y: auto;
+                        float: right;
+                        li{
+                            @include icon-spot;
+                            text-align: right;
+                            display: block !important;
+                            .login{ color: #0195FF ; }
+                            .monitor{ color: #B25656; padding: 3px 0px;}
+                        }
+                    }
+                }
+                .entry-information{
+                    padding: 10px 20px 10px 13px;
+                    background-color: #3D3C41;
+                    margin-top: 2px;
+                    p{ @include flex-between; }
+                    .icon-num span{
+                        color: #889497;
+                        margin: 0px 5px;
+                    }
+                    
+                }
+            }
+            }  
+        }
+
+}
