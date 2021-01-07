@@ -1,0 +1,37 @@
+@mixin toggle-video{
+    cursor: pointer;
+    position: absolute;
+    top: 180px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #fff;
+}
+@mixin icon-spot{
+    height: 96px;
+    padding: 0px 30px;
+    background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
+    background-position: 12px 5px;
+}
+@mixin flex-between{
+    display: flex;
+    justify-content: space-between;
+}
+li{
+    @include icon-spot;
+    .login{ color: #0195FF ; }
+    .monitor{ color: #B25656; padding: 3px 0px;}
+    .entry-log-type{
+        @include flex-between;
+        div{
+            text-align: right;
+            font-size: 12px;
+            p{
+                margin: 2px 0px !important;
+                width: 134px;
+                word-break:break-all;
+            }
+        }
+    }
+}

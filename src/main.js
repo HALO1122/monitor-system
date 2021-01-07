@@ -2,8 +2,9 @@ import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
 import router from './router'
-// socket.io
-import socketIo from "vue-socket.io";
+// socket
+import vueSocketIo from "vue-socket.io";
+import socketio from 'socket.io-client';
 // elementui
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -11,37 +12,21 @@ import 'element-ui/lib/theme-chalk/index.css';
 import './assets/style/_icon.scss'
 import './assets/style/_common.scss'
 
-import { getMonitorRoom } from '@/utils/api.js'
 
 Vue.config.productionTip = false;
-
 Vue.use(ElementUI);
 
+Vue.use(
+  new vueSocketIo({
+      debug: true,
+      connection: socketio("https://peer7.eztest.org:8888"),
+  })
+);
 
-  // Vue.use(
-  //   new socketIo({
-  //     debug: true,
-  //     // connection: io(res.peer_setting.singal_server, options),
-  //     connection: "https://peer7.eztest.org:8888",
-  //   })
-  // );
-
-  // getMonitorRoom().then(res => {
-  // Vue.use(
-  //   new socketIo({
-  //     debug: true,
-  //     // connection: io(res.peer_setting.singal_server, options),
-  //     connection: res.peer_setting.singal_server,
-  //   })
-  // );
-// })
-
-
-
-
-
-new Vue({
+const vue = new Vue({
   store,
   router,
   render: h => h(App)
 }).$mount('#app')
+
+export default vue

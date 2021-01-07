@@ -105,7 +105,7 @@ export default {
                 this.vidoeOrPhoto = !this.vidoeOrPhoto;
                 this.takephoto = false;
             } else {
-                let msg = {"image_base64_str": this.photoData}
+                let msg = {"image_base64_str": this.photoData};
                 saveProctorPhoto({ data: msg }).then(() => {
                     const videoElement = document.querySelector('#camera_view');
                     stopTrack(videoElement.srcObject);

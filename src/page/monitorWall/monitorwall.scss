@@ -4,7 +4,6 @@
 }
 .wrap-room-wall{
     width: 100%;
-    height: 100%;
     min-height: 100%;
     background-color: #1a1a1a;
     .room-nav{
@@ -90,6 +89,25 @@
             margin-bottom: 4px;
         }
     }
+    .nav-btnPrev, .nav-btnNext {
+        font-size: 60px;
+        position: absolute;
+        top: 50%;
+        z-index: 99;
+        i{
+            width: 100px;
+            height: 170px;
+            position: absolute;
+            background: url(../../assets/images/icons-sprite.png) no-repeat;
+            cursor: pointer;
+        }
+    }
+    .nav-btnPrev{
+        left: 0px; i{ background-position: -534px -30px; }
+    }
+    .nav-btnNext{
+        right: 110px; i{ background-position: -400px -30px; }
+    }
     .room-video-tip{
         width: 280px;
         padding: 100px;
@@ -101,34 +119,14 @@
     }
     .room-video-block{
         width: 1750px;
-        height: 794px;
+        // height: 794px;
         position: relative;
         overflow: hidden;
-        padding: 40px 80px 60px;
+        margin: 40px 75px;
         color: #ffffff;
-        .nav-btnPrev, .nav-btnNext {
-            font-size: 60px;
-            position: absolute;
-            top: 20%;
-            z-index: 99;
-            i{
-                width: 100px;
-                height: 170px;
-                position: absolute;
-                background: url(../../assets/images/icons-sprite.png) no-repeat;
-                cursor: pointer;
-            }
-        }
-        .nav-btnPrev{
-            left: 10px; i{ background-position: -534px -30px; }
-        }
-        .nav-btnNext{
-            right: 110px; i{ background-position: -400px -30px; }
-        }
         .room-video-list{
             width: 2190px;
-            overflow: hidden;
-            position: absolute;
+            display: flex;
             .room-video-li { 
                 position: relative; 
                 width: 420px;
@@ -149,9 +147,9 @@
                         }
                     }
                     .video-tag-tip{
-                        @include flex-between;
-                        padding: 12px;
-                        font-size: 14px;
+                        display: flex;
+                        position: absolute;
+                        left: 12px;
                         .tag-monitor-status{ color: #FF5252 !important; }
                         .tag-abnormal{
                             background: #BF1E1E;
@@ -184,29 +182,19 @@
                     background-position: 12px 5px;
                 }
                 .entry-event-block{
-                    height: 350px;
+                    // height: 350px;
                     background-color: #3D3C41;
                     position: relative;
                     .double-video{
                         @include toggle-video;
                     }
                     .entry-log {
+                        height: 350px;
                         overflow-y: auto;
-                        li{
-                            @include flex-between;
-                            @include icon-spot;
-                            .login{ color: #0195FF ; }
-                            .monitor{ color: #B25656; padding: 3px 0px;}
-                            div{
-                                text-align: right;
-                                p{ margin: 2px 0px !important; }
-                            }
-                        }
                     }
                 }
                 .eagle-event-block{
                     display: none;
-
                     position: relative;
                     height: 350px;
                     background-color: #3D3C41;
