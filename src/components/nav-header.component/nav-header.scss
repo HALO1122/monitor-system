@@ -44,6 +44,7 @@
         position: relative;
         font-size: 14px;
         display: flex;
+        align-items: center;
         span {
             padding: 0 8px;
         }
@@ -60,7 +61,7 @@
             border-right: 6px solid transparent;
             border-left: 6px solid transparent;
             position: absolute;
-            top: 6px;
+            top: 31px;
             left: 17px;
         }
         .handsup-num{
@@ -72,7 +73,7 @@
             background-color: #00CF71;
             border-radius: 50%;
             position: absolute;
-            top: -3px;
+            top: 5px;
             left: 20px;
             z-index: 9;
         }
@@ -106,7 +107,7 @@
         background-color: #838489;
         height: 27px;
         line-height: 10px;
+        font-size: 14px;
         color: #fff;
-        margin-bottom: 4px;
     }
 }

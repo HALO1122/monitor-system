@@ -3,7 +3,7 @@
         <!-- 头部班级信息 -->
         <nav-header :roomInfo="room_info" :role="role"></nav-header>
         <!-- 展示内容---无考生 -->
-        <div class="room-video-tip txt-16px" v-if="permitIsEmpty">暂无考生信息！</div>
+        <div class="room-video-tip txt-16px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
         <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevDta()"><i class="icon-nav-btnPrev"></i></span>
         <span class="nav-btnNext" v-if="!permitIsEmpty" @click="getNextDta()"><i class="icon-nav-btnNext"></i></span>
         <!-- 展示内容---有考生 -->
@@ -16,7 +16,7 @@
                             <span class="tag-monitor-status"><i class="ez-icon-font">&#xe73e;</i> 运行中</span>
                             <span class="icon-dingzhu"><i class="ez-icon-font txt-24px">&#xe80d;</i></span>
                             <span class="icon-yuyin"><i class="ez-icon-font txt-24px">&#xe80e;</i></span>
-                            <span class="tag-abnormal">有异常</span>
+                            <span class="tag-abnormal">{{ $t('monitor.abnormal') }}</span>
                         </p>
                         <a href="#" target="_blank"><img class="entry-picture mb5" src="">
                         <!-- {{item.photo_url}} -->
@@ -46,8 +46,8 @@
                                 <span><i class="ez-icon-font">&#xe807;</i>{{item.monitor_photo_count}}</span>
                             </span></p>
                         <p class="exam">
-                            <span class="exam-answer">答题时长：{{item.time_spent}}</span>
-                            <span class="exam-complete">已答：{{item.answered_num}} / {{item.item_num}}题</span>
+                            <span class="exam-answer">{{ $t('monitor.time_spent') }}{{item.time_spent}}</span>
+                            <span class="exam-complete">{{ $t('monitor.abnormal') }}{{item.answered}} / {{item.item_num}}{{ $t('monitor.question') }}</span>
                         </p>
                     </div>
                 </li>

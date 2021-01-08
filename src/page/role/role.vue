@@ -1,27 +1,27 @@
 <template>
     <div id="main">
         <div class="role-content" v-show="sessionContent">
-            <p class="txt-18px mb20">请选择您的身份：</p>
+            <p class="txt-18px mb20">{{ $t('role.select') }}</p>
             <div class="pt30 role-select">
                 <div id="proctorT" @click="roleColor = !roleColor" >
                     <img src="../../assets/images/proctor.png" :class="{proctorColor: !roleColor}" width="180" alt="proctor">
-                    <p class="pt20 txt-16px">我是监考老师</p>
+                    <p class="pt20 txt-16px">{{ $t('role.imProctor') }}</p>
                 </div>
                 <div id="patrolT" @click="roleColor = !roleColor" >
                     <img src="../../assets/images/patrol.png" :class="{patrolColor: roleColor}" width="180" alt="patrol">
-                    <p class="pt20 txt-16px">我是巡考人员</p>
+                    <p class="pt20 txt-16px">{{ $t('role.imPatrol') }}</p>
                 </div>
             </div>
-            <el-button type="primary" class="role-confirm mt20" @click="toRoomWall()">确定</el-button>
+            <button class="btn btn-blue mt20" @click="toRoomWall()">{{ $t('role.confirm') }}</button>
         </div>
         <div class="phont-content" v-show="!sessionContent">
-            <h3>签到拍照</h3>
+            <h5>{{ $t('role.takePhoto') }}</h5>
             <div class="select-camera mt20">
-                <span>选择摄像头：</span>
+                <span>{{ $t('role.cameraSelect') }}</span>
                 <select class="device-select" id="videoSource"></select>
             </div>
             <div class="select-microphone mt20">
-                <span>选择麦克风：</span>
+                <span>{{ $t('role.micSelect') }}</span>
                 <select class="device-select" id="audioSource"></select>
             </div>
             <div class="video-source">
@@ -35,10 +35,10 @@
                 <video id="camera_view" v-show="!vidoeOrPhoto" muted autoplay playsinline></video>
             </div>
             <div class="mt30">
-                <p class="mb20 txt-12px">注：根据管理者要求，监考工作前，需要先进行签到拍照，此照片仅作为监考签到使用，系统不会做其他应用。</p>
+                <p class="mb20 txt-12px">{{ $t('role.tip') }}</p>
                 <div id="save_photo" v-show="takephoto">
-                    <el-button type="primary" class="take-photo-btn mt20 mr20" @click.native="confirm_photo(false)">重拍</el-button>
-                    <el-button type="primary" class="take-photo-btn mt20 ml20" @click.native="confirm_photo(true)">完成</el-button>
+                    <button class="btn btn-blue take-photo-btn" @click="confirm_photo(false)">{{ $t('role.retry') }}</button>
+                    <button class="btn btn-blue take-photo-btn" @click="confirm_photo(true)">{{ $t('role.done') }}</button>
                 </div>
                 <button v-show="!takephoto" class="take-photo mt20" @click="take_photo()" :disabled="isDisabled"><i></i></button>
             </div>

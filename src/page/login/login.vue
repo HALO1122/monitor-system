@@ -1,19 +1,23 @@
 <template>
     <div class="login">
         <a class="help-center" href="http://docs.eztest.org" target="_blank">
-            <i class="ez-icon-font">&#xe65e;</i>&nbsp;帮助中心</a>
+            <i class="ez-icon-font">&#xe65e;</i>&nbsp;{{ $t('login.help') }}</a>
         <div class="login-logo"></div>
-        <p class="wrap-title">—— &nbsp;&nbsp;监控系统&nbsp;&nbsp; ——</p>
+        <p class="wrap-title">—— &nbsp;&nbsp;{{ $t('login.system') }}&nbsp;&nbsp; ——</p>
 
         <div class="wrap-form">
-            <el-form class="wrap-inputs" ref="form" :model="form" label-width="90px">
-                <el-alert class="mb10" :title="errorTip" type="error" center show-icon v-show="error" @close="closeAlert"></el-alert>
-                <el-form-item label="监控老师："><el-input v-model="id_name" autofocus="true" placeholder="请输入姓名"></el-input></el-form-item>
-                <el-form-item label="监控口令："><el-input v-model="id_code" placeholder="请输入口令"></el-input></el-form-item>
-                <el-button type="primary" class="btn-login mt20" @click="Login()">登录</el-button>
+            <div class="wrap-inputs login-inputs">
+                <p class="tip-wrap" v-if="error">{{errorTip}}</p>
+                <p class="form-group">{{ $t('login.proctor') }}
+                    <input type="text" class="form-control" v-model="id_name" :placeholder="$t('login._placeProctor')" autofocus></p>
+                <p class="form-group mt30">{{ $t('login.code') }}
+                    <input type="text" class="form-control" v-model="id_code" :placeholder='$t("login._placeCode")'></p>
+                <button class="btn btn-blue btn-login mt30" @click="Login()">{{ $t('login.login') }}</button>
+                <p class="mt30">{{$t('login.detectBefore')}}
+                    <span class="theme-color" @click="detectDevice()">{{ $t('login.detect') }}</span>
+                </p>
+            </div>
 
-                <p class="mt30">监考前，请先进行<span class="theme-color" @click="detectDevice()">设备检测</span></p>
-            </el-form>
         </div>
     </div>
 </template>
@@ -23,22 +27,17 @@ import { RoomLogin } from '@/utils/api.js'
 export default {
     data() {
         return{
-            form: { name: '' },
             id_name: "",
             id_code: "",
             error: false,
-            errorTip: "error"
+            errorTip: ""
         }
     },
     methods: {
-        closeAlert() {
-            this.error = false;
-            this.errorTip = "";
-        },
         Login() {
             if( this.id_name == "" || this.id_code == "" ){
                 this.error = true;
-                this.errorTip = "姓名和口令不能为空！";
+                this.errorTip = this.$t('login.errorTip');
             } else{
                 this.Register();
             }
@@ -56,7 +55,6 @@ export default {
                     this.$store.commit('TEACHER_ID', res.teacher_id);
                     this.$router.push('/role');
                 } else{
-                    console.log(res.msg, 'res.msg')
                     this.error = true;
                     this.errorTip = res.msg;
                 }
