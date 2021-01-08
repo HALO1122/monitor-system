@@ -1,0 +1,38 @@
+@mixin icon-spot{
+    height: 96px;
+    padding: 0px 30px;
+    background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
+    background-position: 140px 5px;
+}
+.eagle-cut{
+    padding: 5px 3px;
+    background-color: #999;
+    position: absolute;
+    bottom: 9px;
+    right: 166px;
+}
+.tag-monitor-status {
+    position: absolute;
+    left: 12px;
+    color: #FF5252;
+}
+.eagle-show{
+    position: relative;
+    width: 248px;
+    margin: 10px 0px 0px 6px;
+    float: left;
+
+}
+
+.eagle-entry-log{
+    width: 160px;
+    height: 350px;
+    overflow-y: auto;
+    li{
+        @include icon-spot;
+        text-align: right;
+        display: block !important;
+        .login{ color: #0195FF ; }
+        .monitor{ color: #B25656; padding: 3px 0px;}
+    }
+}

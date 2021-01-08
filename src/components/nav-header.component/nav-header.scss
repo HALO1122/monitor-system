@@ -1,0 +1,112 @@
+.room-nav{
+    display: flex;
+    justify-content: space-between;
+    height: 60px;
+    line-height: 60px;
+    padding: 0px 16px 0px 12px;
+    background-color: #3A3B3F;
+    color: #ffffff;
+    position: relative;
+    .room-logo {
+        display: flex;
+        background: url('../../assets/images/command-logo.png') no-repeat 20px 18px;
+        background-size: 70px 28px;
+        padding-left: 130px;
+        .exam-time{
+            position: relative;
+            margin: 12px;
+            padding: 0px 12px;
+            background-color: #4F5054;
+            border-radius: 5px;
+            height: 36px;
+            line-height: 36px;
+            &::before{
+                content: "";
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-right: 8px solid #4F5054;
+                position: absolute;
+                top: 10px;
+                left: -8px;
+            }
+        }
+    }
+    .room-btn-toggle{
+        width: 90px;
+        background-color: #4F5054;
+        color: #ffffff;
+        border-radius: 8px;
+        height: 40px;
+        line-height: 40px;
+        margin-top: 10px;
+    }
+    .room-msg{
+        position: relative;
+        font-size: 14px;
+        display: flex;
+        span {
+            padding: 0 8px;
+        }
+        .room-refresh-msg{
+            border: 1px solid #6F7177;
+            margin: 9px;
+            line-height: 3;
+            padding: 0px 20px;
+            border-radius: 10px;
+        }
+        .handsup-arrow{
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid #fff;
+            border-right: 6px solid transparent;
+            border-left: 6px solid transparent;
+            position: absolute;
+            top: 6px;
+            left: 17px;
+        }
+        .handsup-num{
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 12px;
+            background-color: #00CF71;
+            border-radius: 50%;
+            position: absolute;
+            top: -3px;
+            left: 20px;
+            z-index: 9;
+        }
+        .handsup-content{
+            border: 1px solid #fff;
+            background-color: #fff;
+            width: 250px;
+            height: 127px;
+            position: absolute;
+            top: 58px;
+            right: 418px;
+            border-radius: 6px;
+            z-index: 99;
+            padding: 5px 10px;
+            overflow-y: auto;
+        }
+    }
+    .btn-end-proctor, .btn-end-proctor:hover{
+        min-width: 50px !important;
+        height: 28px;
+        line-height: 28px;
+        background-color: transparent;
+        border: 1px solid #FF5252;
+        color: #FF5252;
+        padding: 0px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .btn-refresh, .btn-refresh:hover{
+        min-width: 50px !important;
+        background-color: #838489;
+        height: 27px;
+        line-height: 10px;
+        color: #fff;
+        margin-bottom: 4px;
+    }
+}

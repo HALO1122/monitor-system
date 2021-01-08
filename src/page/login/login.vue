@@ -50,10 +50,15 @@ export default {
             };
             RoomLogin({ data:msg }).then(res => {
                 if (res.code == 200) {
+                    this.error = false;
                     this.$store.commit('SET_TOKEN', res.token);
                     this.$store.commit('ROOM_ID', res.room_id);
                     this.$store.commit('TEACHER_ID', res.teacher_id);
                     this.$router.push('/role');
+                } else{
+                    console.log(res.msg, 'res.msg')
+                    this.error = true;
+                    this.errorTip = res.msg;
                 }
             })
             .catch(error => {

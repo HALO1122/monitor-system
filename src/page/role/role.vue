@@ -34,13 +34,13 @@
                 <canvas id="canvas_photo" v-show="vidoeOrPhoto" width="320" height="240"></canvas>
                 <video id="camera_view" v-show="!vidoeOrPhoto" muted autoplay playsinline></video>
             </div>
-            <div class="video-btn-wrap mt30">
-                <p class="text-white text-center mb20 txt-12px">注：根据管理者要求，监考工作前，需要先进行签到拍照，此照片仅作为监考签到使用，系统不会做其他应用。</p>
+            <div class="mt30">
+                <p class="mb20 txt-12px">注：根据管理者要求，监考工作前，需要先进行签到拍照，此照片仅作为监考签到使用，系统不会做其他应用。</p>
                 <div id="save_photo" v-show="takephoto">
-                    <el-button type="primary" class="btn mt20 mr20" @click.native="confirm_photo(false)">重拍</el-button>
-                    <el-button type="primary" class="btn mt20 ml20" @click.native="confirm_photo(true)">完成</el-button>
+                    <el-button type="primary" class="take-photo-btn mt20 mr20" @click.native="confirm_photo(false)">重拍</el-button>
+                    <el-button type="primary" class="take-photo-btn mt20 ml20" @click.native="confirm_photo(true)">完成</el-button>
                 </div>
-                <button v-show="!takephoto" class="take-photo" @click="take_photo()" :disabled="isDisabled"><i></i></button>
+                <button v-show="!takephoto" class="take-photo mt20" @click="take_photo()" :disabled="isDisabled"><i></i></button>
             </div>
         </div>
     </div>

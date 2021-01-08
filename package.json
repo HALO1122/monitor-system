@@ -17,7 +17,6 @@
     "eslint-plugin-vue": "^7.4.0",
     "qs": "^6.9.4",
     "simple-peer": "^9.9.3",
-    "socket.io-client": "^3.0.4",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vue-socket.io": "^3.0.7",

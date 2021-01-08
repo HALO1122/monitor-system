@@ -4,7 +4,6 @@ import store from './store'
 import router from './router'
 // socket
 import vueSocketIo from "vue-socket.io";
-import socketio from 'socket.io-client';
 // elementui
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -18,8 +17,8 @@ Vue.use(ElementUI);
 
 Vue.use(
   new vueSocketIo({
-      debug: true,
-      connection: socketio("https://peer7.eztest.org:8888"),
+      debug: false,
+      connection: "https://peer7.eztest.org:8888",
   })
 );
 
