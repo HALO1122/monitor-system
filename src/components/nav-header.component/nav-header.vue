@@ -1,8 +1,9 @@
 <template>
     <div class="room-nav">
         <div class="room-logo">           
-            <span class="txt-16px">{{ $t('monitor.title') }}&nbsp;&nbsp;&nbsp;{{roomInfo.session_name}}</span>
-            <i class="ez-icon-font txt-20px pl20" @mouseenter="hoverShowTime()" @mouseleave="leaverShowTime()">&#xe803;</i>
+            <span>{{ $t('monitor.title') }}</span>
+            <span class="pl20 pr20">{{roomInfo.room_name}}</span>
+            <i class="ez-icon-font txt-20px" @mouseenter="hoverShowTime()" @mouseleave="leaverShowTime()">&#xe803;</i>
             <p class="exam-time" v-show="showExamTime">{{ $t('monitor.time') }}{{ roomInfo.session_start }} - {{ roomInfo.session_end }}</p>
         </div>
         <p class="room-btn-toggle">{{ timerNum }}{{ $t('monitor.countdown') }}</p>

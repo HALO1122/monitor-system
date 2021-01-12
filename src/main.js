@@ -3,6 +3,8 @@ import App from './App.vue'
 import store from './store'
 import router from './router'
 import VueI18n from "vue-i18n";
+import vuescroll from 'vuescroll';
+
 // bootstrap
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -13,7 +15,7 @@ import vueSocketIo from "vue-socket.io";
 import '@/assets/style/_icon.scss';
 import '@/assets/style/_common.scss';
 
-
+Vue.use(vuescroll);
 Vue.use(VueI18n);
 const i18n = new VueI18n({
   // 页面刷新后仍保持当前的语言环境，一般会将语言参数缓存到localStorage中，

@@ -3,7 +3,7 @@
         <!-- 头部班级信息 -->
         <nav-header :roomInfo="room_info" :role="role"></nav-header>
         <!-- 展示内容---无考生 -->
-        <div class="room-video-tip txt-16px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
+        <div class="room-video-tip txt-18px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
         <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevDta()"><i class="icon-nav-btnPrev"></i></span>
         <span class="nav-btnNext" v-if="!permitIsEmpty" @click="getNextDta()"><i class="icon-nav-btnNext"></i></span>
         <!-- 展示内容---有考生 -->
@@ -18,9 +18,8 @@
                             <span class="icon-yuyin"><i class="ez-icon-font txt-24px">&#xe80e;</i></span>
                             <span class="tag-abnormal">{{ $t('monitor.abnormal') }}</span>
                         </p>
-                        <a href="#" target="_blank"><img class="entry-picture mb5" src="">
-                        <!-- {{item.photo_url}} -->
-                            <video id="entry_video" muted="" autoplay="" playsinline=""></video></a>
+                        <img class="entry-picture mb5" :src="item.photo_url" style="display:none">
+                        <video id="entry_video" muted="" autoplay="" playsinline=""></video>
                     </div>
                     <p class="icon-event-content">
                         <span id="icon-pinVideo"><i class="ez-icon-font txt-18px">&#xe804;</i></span>
@@ -29,13 +28,15 @@
                         <span id="icon-sendMsg"><i class="ez-icon-font txt-18px">&#xe63b;</i></span>
                         <span id="icon-cut"><i class="ez-icon-font txt-18px">&#xe807;</i></span>
                     </p>
-                    <div class="entry-event-block" v-if="!item.eagle_socket_id">
-                        <p class="double-video" @click="togglesEventBlock(item, 'one')"></p>
+                    <div class="entry-event-block" v-if="!item.eagle_eye">
+                        <p class="double-video" v-if="doubleVideo" @click="togglesEventBlock(item, 'one')"></p>
                         <ul class="entry-log pt10 pb10">
-                            <entry-log :entryLog="subitem" v-for="(subitem, index) in item.entry_log" :key="index"></entry-log>
+                            <vue-scroll :ops="ops">
+                                <entry-log :entryLog="subitem" v-for="(subitem, index) in item.entry_log" :key="index"></entry-log>
+                            </vue-scroll>
                         </ul>
                     </div>
-                    <div class="eagle-event-block" v-if="item.eagle_socket_id">
+                    <div class="eagle-event-block" v-if="item.eagle_eye">
                         <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
                         <eagle-log :eagleLog="item"></eagle-log>
                     </div>
@@ -75,7 +76,27 @@ export default {
             entryInfo: [],
             entry_list: [],
             entryIndex : 0,
-            togglesEventLog: true
+            doubleVideo: false,
+            ops: {
+                vuescroll: {},
+                scrollPanel: {},
+                rail: {
+                    background: "#555557",    //轨道的背景色。
+                    opacity: 0.4,            //轨道的透明度。 0是透明，1是不透明
+                    size: "8px",             //轨道的尺寸。
+                    specifyBorderRadius: false, //是否指定轨道的 borderRadius， 如果不那么将会自动设置。
+                    gutterOfEnds: null,
+                    gutterOfSide: "0px",      //距离容器的距离
+                    keepShow: false
+                },
+                bar: {
+                    hoverStyle: false,
+                    onlyShowBarOnScroll: false, //是否只有滚动的时候才显示滚动条
+                    background: "#f1f1f1",
+                    opacity: 0.4,
+                    "overflow-x": "hidden"
+                }
+            }
         }
     },
     components: {
@@ -98,7 +119,8 @@ export default {
         initMonitorRoom() {
             getMonitorRoom().then(res => {
                 let _time = 0,  _timerPause = true, that = this;
-                that.room_info = res;                    
+                that.room_info = res;
+                that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
                     that.permitIsEmpty = false;
                     openSocket(that.room_info);
@@ -138,12 +160,13 @@ export default {
                 this.initSingleVideo(entry_list[i], action, i);
             }
         },
-        initSingleVideo(permit) {
-            console.log(permit, 'entry[]---permit')
+        initSingleVideo(permit, action, i) {
             let msg = {"permit": permit};
             getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
-                    connect(res.data.socket_id);
+                    connect(res.data.socket_id, event);
+                    res.data.eagle_eye = this.room_info.eagle_eye;
+                    res.data.audio_monitor = this.room_info.audio_monitor;
                     this.entryInfo.push(res.data);
                     console.log(this.entryInfo, 'entry-res')
                 }
@@ -160,8 +183,7 @@ export default {
             console.log(this.entryInfo,'next')
         },
         togglesEventBlock(item, toggles) {
-            console.log(item, toggles)
-            toggles == 'one' ? item.eagle_socket_id = true : item.eagle_socket_id = false;
+            toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
         }
     }
 }
