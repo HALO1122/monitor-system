@@ -62,19 +62,22 @@
                         border-top-right-radius: 16px;
                     }
                     .video-tag-tip{
-                        display: flex;
                         position: absolute;
                         left: 12px;
-                        span{ margin: 0px 6px; }
-                        .tag-monitor-status{ color: #FF5252 !important; }
+                        top: 10px;
+                        i{ margin: 0px 6px; }
+                        .icon-monitor{ color: #FF5252 !important; }
                         .icon-dingzhu { color: #4D84FF; }
                         .icon-yuyin { color: #00CF71; }
-                        .tag-abnormal{
-                            background: #BF1E1E;
-                            border-radius: 15px;
-                            padding: 4px 8px;
-                            font-size: 12px;
-                        }
+                    }
+                    .tag-abnormal{
+                        background: #BF1E1E;
+                        border-radius: 15px;
+                        padding: 2px 8px;
+                        font-size: 12px;
+                        position: absolute;
+                        top: 10px;
+                        right: 12px;
                     }
                 }
                 .icon-event-content{
@@ -82,7 +85,7 @@
                     margin: 0px;
                     padding: 8px 5px;
                     text-align: left;
-                    span{ margin: 0px 6px; }
+                    i{ margin: 0px 6px; }
                 }
                 @mixin toggle-video{
                     cursor: pointer;
@@ -99,6 +102,8 @@
                     background-position: 12px 5px;
                 }
                 .entry-event-block{
+                    height: 350px;
+                    overflow-y: auto;
                     background-color: #3D3C41;
                     position: relative;
                     .double-video{
@@ -107,10 +112,7 @@
                         border-bottom: 8px solid transparent;
                         border-left: 8px solid #fff;
                     }
-                    .entry-log {
-                        height: 350px;
-                        overflow-y: auto;
-                    }
+
                 }
                 .eagle-event-block{
                     position: relative;
@@ -127,15 +129,16 @@
                     padding: 1px 12px;
                     background-color: #3D3C41;
                     margin-top: 2px;
-                    p{ @include flex-between; }
+                    p{
+                        @include flex-between;
+                        margin: 10px 0px;
+                    }
                     .icon-num span{
                         color: #889497;
                         margin: 0px 5px;
                     }
-                    
                 }
             }
-            }  
-        }
-
+        }  
+    }
 }

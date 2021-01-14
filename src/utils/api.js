@@ -49,3 +49,12 @@ export function getSingleEntry (config) {
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }
+
+// 监考发消息
+export function sendEntryMsg (config) {
+    let Obj = {
+        url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+'/teacher_message/',
+        method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}

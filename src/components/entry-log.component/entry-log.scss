@@ -18,19 +18,23 @@
     display: flex;
     justify-content: space-between;
 }
-li{
-    @include icon-spot;
-    .login{ color: #0195FF ; }
-    .monitor{ color: #B25656; padding: 3px 0px;}
-    .entry-log-type{
-        @include flex-between;
-        div{
-            text-align: right;
-            font-size: 12px;
-            p{
-                margin: 2px 0px !important;
-                width: 134px;
-                word-break:break-all;
+.entry-log {
+    height: 350px;
+    overflow-y: auto;
+    li{
+        @include icon-spot;
+        .login{ color: #0195FF ; }
+        .monitor{ color: #B25656; padding: 3px 0px;}
+        .entry-log-type{
+            @include flex-between;
+            div{
+                text-align: right;
+                font-size: 12px;
+                p{
+                    margin: 2px 0px !important;
+                    width: 134px;
+                    word-break:break-all;
+                }
             }
         }
     }

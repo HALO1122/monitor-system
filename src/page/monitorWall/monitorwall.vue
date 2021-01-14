@@ -1,7 +1,7 @@
 <template>
     <div class="wrap-room-wall">
         <!-- 头部班级信息 -->
-        <nav-header :roomInfo="room_info" :role="role"></nav-header>
+        <nav-header :roomInfo="room_info" :endExam="endExam" :timerNum="timerNum"></nav-header>
         <!-- 展示内容---无考生 -->
         <div class="room-video-tip txt-18px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
         <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevDta()"><i class="icon-nav-btnPrev"></i></span>
@@ -9,32 +9,28 @@
         <!-- 展示内容---有考生 -->
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
-                <li class="room-video-li" v-for="(item, index) in entryInfo" :key="index">
+                <li class="room-video-li" v-for="item in entryInfo" :key="item.permit">
                     <span class="video-loading-wrap"></span>
                     <div class="video-entry-content">
                         <p class="video-tag-tip">
-                            <span class="tag-monitor-status"><i class="ez-icon-font">&#xe73e;</i> 运行中</span>
-                            <span class="icon-dingzhu"><i class="ez-icon-font txt-24px">&#xe80d;</i></span>
-                            <span class="icon-yuyin"><i class="ez-icon-font txt-24px">&#xe80e;</i></span>
-                            <span class="tag-abnormal">{{ $t('monitor.abnormal') }}</span>
+                            <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">运行中</span>
+                            <i v-show="item.pinup" class="ez-icon-font txt-24px icon-dingzhu">&#xe80d;</i>
+                            <i  v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80e;</i>
                         </p>
-                        <img class="entry-picture mb5" :src="item.photo_url" style="display:none">
-                        <video id="entry_video" muted="" autoplay="" playsinline=""></video>
+                        <p class="tag-abnormal" v-show="item.monitor_photo_count">{{ $t('monitor.abnormal') }}</p>
+                        <img class="entry-picture mb5" v-show="!item.isVideo" ref="entry_img" :src="item.photo_url">
+                        <video id="entry_video" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
                     </div>
                     <p class="icon-event-content">
-                        <span id="icon-pinVideo"><i class="ez-icon-font txt-18px">&#xe804;</i></span>
-                        <span id="icon-controlSound"><i class="ez-icon-font txt-18px">&#xe806;</i></span>
-                        <span id="icon-openVideo"><i class="ez-icon-font txt-18px">&#xe66c;</i></span>
-                        <span id="icon-sendMsg"><i class="ez-icon-font txt-18px">&#xe63b;</i></span>
-                        <span id="icon-cut"><i class="ez-icon-font txt-18px">&#xe807;</i></span>
+                        <i class="ez-icon-font txt-18px" @click="pingVideo(item)">&#xe804;</i>
+                        <i v-if="item.audio_monitor" @click="controlSound(item, $event)" class="ez-icon-font txt-18px" v-html="sound"></i>
+                        <i v-if="openVideo" @click="openVideo(item)" class="ez-icon-font txt-18px">&#xe66c;</i>
+                        <i class="ez-icon-font txt-18px" @click="sendMessage(item)">&#xe63b;</i>
+                        <i class="ez-icon-font txt-18px" @click="Screenshot(item)">&#xe807;</i>
                     </p>
                     <div class="entry-event-block" v-if="!item.eagle_eye">
                         <p class="double-video" v-if="doubleVideo" @click="togglesEventBlock(item, 'one')"></p>
-                        <ul class="entry-log pt10 pb10">
-                            <vue-scroll :ops="ops">
-                                <entry-log :entryLog="subitem" v-for="(subitem, index) in item.entry_log" :key="index"></entry-log>
-                            </vue-scroll>
-                        </ul>
+                        <entry-log :entryLog="item"></entry-log>
                     </div>
                     <div class="eagle-event-block" v-if="item.eagle_eye">
                         <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
@@ -48,12 +44,14 @@
                             </span></p>
                         <p class="exam">
                             <span class="exam-answer">{{ $t('monitor.time_spent') }}{{item.time_spent}}</span>
-                            <span class="exam-complete">{{ $t('monitor.abnormal') }}{{item.answered}} / {{item.item_num}}{{ $t('monitor.question') }}</span>
+                            <span class="exam-complete">{{ $t('monitor.answered') }}{{item.answered_num}} / {{item.item_num}}{{ $t('monitor.question') }}</span>
                         </p>
                     </div>
                 </li>
             </ul>
         </div>
+        <send-message :sendMsgData="sendMsgData" :timerPause="timerPause" :eagle_eye="room_info.eagle_eye"
+            @_timerPause="timerPause = true"></send-message>
     </div>
 </template>
 
@@ -64,51 +62,45 @@ import { getMonitorRoom, getSingleEntry } from '@/utils/api.js'
 import navHeader from '@/components/nav-header.component/nav-header'
 import entryLog from '@/components/entry-log.component/entry-log'
 import eagleLog from '@/components/eagle-log.component/eagle-log'
+import sendMessage from '@/components/send-message.component/send-message'
 export default {
     data() {
         return {
             room_info: {},
             role: "",
             permitIsEmpty: true,
+            timerNum: 10,
             timeClock: null,
-            timePause: true,
-            endExam: true,
+            timerPause: true,
+            openVideo: false,
+            endExam: false,
             entryInfo: [],
             entry_list: [],
             entryIndex : 0,
             doubleVideo: false,
-            ops: {
-                vuescroll: {},
-                scrollPanel: {},
-                rail: {
-                    background: "#555557",    //轨道的背景色。
-                    opacity: 0.4,            //轨道的透明度。 0是透明，1是不透明
-                    size: "8px",             //轨道的尺寸。
-                    specifyBorderRadius: false, //是否指定轨道的 borderRadius， 如果不那么将会自动设置。
-                    gutterOfEnds: null,
-                    gutterOfSide: "0px",      //距离容器的距离
-                    keepShow: false
-                },
-                bar: {
-                    hoverStyle: false,
-                    onlyShowBarOnScroll: false, //是否只有滚动的时候才显示滚动条
-                    background: "#f1f1f1",
-                    opacity: 0.4,
-                    "overflow-x": "hidden"
-                }
-            }
+            entryVideo: {},
+            sound: '&#xe806;',
+            sendMsgData: {}
         }
     },
     components: {
-        entryLog, eagleLog, navHeader
+        entryLog, eagleLog, navHeader, sendMessage
     },
     created() {
         this.role = this.$route.query.role;
+        if (this.role == "patrol") {
+            this.openVideo = false;
+            this.endExam = false;
+        } else {
+            this.openVideo = true;
+            this.endExam = true;
+        }
         this.$store.commit('SAVE_ROLE', this.role);
-        console.log(this.role, 'this.$route.query.role')
     },
     mounted() {
-        this.initMonitorRoom();
+        this.$nextTick(() => {
+            this.initMonitorRoom();
+        });
     },
     computed: {
         ...mapState({
@@ -118,7 +110,7 @@ export default {
     methods: {
         initMonitorRoom() {
             getMonitorRoom().then(res => {
-                let _time = 0,  _timerPause = true, that = this;
+                let that = this;
                 that.room_info = res;
                 that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
@@ -131,19 +123,16 @@ export default {
                 } else {
                     that.permitIsEmpty = true;
                 }
-                _time = that.timerNum;
-                _timerPause = that.timePause;
                 that.timeClock = setInterval(function(){
-                    if(_timerPause) {
-                        _time--;
-                        if (_time == 0) { 
-                            _time = 10;
+                    if(that.timerPause) {
+                        that.timerNum--;
+                        if (that.timerNum == 0) { 
+                            that.timerNum = 10;
                             // autoRefresh();
-                            clearInterval( that.timeClock)
+                            clearInterval(that.timeClock)
                         }
-                        that.timerNum = _time;
                     } else {
-                        clearInterval( that.timeClock)
+                        that.timerNum = that.timerNum;
                     }
                 }, 1000)
             })
@@ -161,22 +150,47 @@ export default {
             }
         },
         initSingleVideo(permit, action, i) {
-            let msg = {"permit": permit};
+            let msg = {"permit": permit},
+                self = this;
             getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
-                    connect(res.data.socket_id, event);
-                    res.data.eagle_eye = this.room_info.eagle_eye;
-                    res.data.audio_monitor = this.room_info.audio_monitor;
-                    this.entryInfo.push(res.data);
+                    connect(res.data, action, i, self.$refs);
+                    res.data.eagle_eye = self.room_info.eagle_eye;
+                    res.data.audio_monitor = self.room_info.audio_monitor;
+                    res.data.isVideo = false;
+                    res.data.pinup = false;
+                    res.data.openSound = false;
+                    res.data.openMessageModal = false;
+                    self.entryInfo.push(res.data);
                     console.log(this.entryInfo, 'entry-res')
                 }
 
             })
         },
+        pingVideo(item) {
+            console.log(item, 'item')
+            item.pinup = !item.pinup;
+        },
+        controlSound(item, e) {
+            let video = $(e.target).parents("li").find("#entry_video")[0];
+            item.openSound = !item.openSound;
+            console.log(video, 'video')
+            if (item.openSound) {
+                video.muted = false;
+                this.sound = '&#xe805;';
+            } else {
+                video.muted = true;
+                this.sound = '&#xe806;';
+            }
+        },
+        sendMessage(item) {
+            item.openMessageModal = true;
+            this.sendMsgData = item;
+            this.timerPause = false;
+        },
         getPrevDta() {
             this.entryInfo.pop(0,1);
             console.log(this.entryInfo,'prev')
-
         },
         getNextDta() {
             this.entryInfo.splice(0,1);

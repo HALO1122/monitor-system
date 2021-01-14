@@ -1,6 +1,7 @@
 a,a:hover,a:active,a:focus{
     text-decoration: none;
 }
+p{ margin: 0; }
 ul,li{
     margin: 0;
     padding: 0;
@@ -12,6 +13,7 @@ $themt-color: #0195ff;
 .txt-18px{ font-size: 18px; }
 .txt-20px{ font-size: 20px; }
 .txt-24px{ font-size: 24px; }
+.txt-left{ text-align: left; }
 .mt5{ margin-top: 5px !important; }
 .mb5{ margin-bottom: 5px !important; }
 .mt10{ margin-top: 10px !important; }

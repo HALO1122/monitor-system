@@ -10,11 +10,11 @@
         <div class="room-msg">
             <div v-if="roomInfo.hands_up">
                 <p class="handsup-num">0</p>
-                <span style="font-size: 24px;position: relative;" class="handsup-icon" onclick="controlHandsup()">
+                <span style="font-size: 24px;position: relative;" class="handsup-icon" @click="controlHandsup()">
                     <i class="ez-icon-font txt-24px">&#xe686;</i>
-                    <p class="handsup-arrow"></p>
+                    <p class="handsup-arrow" v-if="handsUp"></p>
                 </span>
-                <div class="handsup-content"></div>
+                <div class="handsup-content" v-if="handsUp"></div>
             </div>
             <p class="room-refresh-msg">
                 <span class="entries">{{ $t('monitor.candidate') }}{{roomInfo.entries_count}}</span>
@@ -34,8 +34,7 @@ export default {
     data() {
         return{
             showExamTime: false,
-            endExam: true,
-            timerNum: 10
+            handsUp: false
         }
     },
     props: {
@@ -43,17 +42,22 @@ export default {
             type: Object,
             dafault: {}
         },
-        role: {
-            type: String,
-            default: ""
+        endExam: {
+            type: Boolean,
+            default: true
+        },
+        timerNum: {
+            type: Number,
+            default: 10
         }
     },
     mounted() {
-        console.log(this.role, 'this.role')
-        console.log(this.role == "patrol", 'this.role')
-        this.role == "patrol" ? this.endExam = false : this.endExam = true;
+       
     },
     methods: {
+        controlHandsup() {
+            this.handsUp = !this.handsUp
+        },
         hoverShowTime() { this.showExamTime = true },
         leaverShowTime() { this.showExamTime = false }
     }

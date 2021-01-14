@@ -7,7 +7,7 @@
         </div>
         <ul class="eagle-entry-log pt10 pb10">
             <vue-scroll :ops="ops">
-                <li v-for="(subitem,index) in eagleLog.entry_log" :key="index">
+                <li v-for="(subitem,index) in logs.entry_log" :key="index">
                     <div v-if="subitem.login"><p class="login">登录考试</p><p>{{subitem.login}}</p></div>
                     <div v-if="subitem.eagle_login"><p class="login">进入鹰眼</p><p>{{subitem.eagle_login}}</p></div>
                     <div v-if="subitem.error_screen"><p class="monitor">截屏异常</p><p>{{subitem.error_screen.time}}</p></div>
@@ -55,6 +55,11 @@ export default {
     },
     mounted() {
         console.log(this.eagleLog, 'eagle_socket_id')
+    },
+    computed: {
+        logs (){
+            return this.eagleLog
+        }
     },
     props: {
         eagleLog: {

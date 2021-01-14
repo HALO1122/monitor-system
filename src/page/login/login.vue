@@ -7,7 +7,7 @@
 
         <div class="wrap-form">
             <div class="wrap-inputs login-inputs">
-                <p class="tip-wrap" v-if="error">{{errorTip}}</p>
+                <p class="tip-wrap txt-left" v-if="error">{{errorTip}}</p>
                 <p class="form-group">{{ $t('login.proctor') }}
                     <input type="text" class="form-control" v-model="id_name" :placeholder="$t('login._placeProctor')" autofocus></p>
                 <p class="form-group mt30">{{ $t('login.code') }}

@@ -2,6 +2,7 @@ import Vue from 'vue';
 import store from '@/store';
 import self from '@/main';
 import vueSocketIo from "vue-socket.io";
+import {entry_list} from './monitorwall';
 import { saveProctorSocketId } from '@/utils/api.js'
     
 const Peer = require('simple-peer'),
@@ -16,7 +17,7 @@ export function openSocket(res) {
         })
     );
     const Role = `${store.state.global.role}`;
-    
+    console.log(entry_list, 'that*****************')
     // 监听 socket
     self.sockets.subscribe('message', data => {
         console.log('message received', data)
@@ -72,16 +73,15 @@ export function openSocket(res) {
     });
 }
 
-export function connect(socketId) {
-    console.log(socketId, 'socketId')
+export function connect(res, action, i, refs) {
+    console.log(res,action, i, refs,'event')
     let peer = new Peer();
     peers[peer._id] = peer;
 
-    console.log(peer, 'peer')
     peer.on('signal', function (data) {
         var pkt = {
             type: "signal",
-            to: socketId,
+            to: res.socket_id,
             from_peer: peer._id,
             to_peer: to_peers[peer._id],
             msg: data
@@ -95,14 +95,16 @@ export function connect(socketId) {
     });
 
     peer.on('stream', function(stream) {
-        let videoElement = document.getElementById("entry_video");
-        videoElement.srcObject = stream;
+        refs.entry_video[i].srcObject = stream;
+        res.isVideo = true;
         console.log(stream,'stream available: ');
     });
     peer.on('data', function(data) {
         console.log('data available');
     });
     peer.on('close', function() {
+        res.isVideo = false;
+        console.log(res, 'res')
         console.log('peer------------------closed');
     });
     peer.on('error', function(error) {
@@ -111,7 +113,7 @@ export function connect(socketId) {
     // make the call
     var pkt = {
         type: "call",
-        to: socketId,
+        to: res.socket_id,
         from_peer: peer._id
     }
     console.log(pkt, 'pkt')
