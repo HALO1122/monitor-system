@@ -92,12 +92,12 @@ export default {
             }
             console.log(msgData, 'msgData')
             this.$socket.emit("message", pkt);
-            // sendEntryMsg({ data: msgData }).then((res)=> {
-            //     if(res.code == 200) {
-            //         // saveCurrentClickEvenLog(sendModelLiPermit, res, 'sendmsg');
-            //         this.closeMsgModal()
-            //     }
-            // }).catch((xhr) => {console.log(xhr)})
+            sendEntryMsg({ data: msgData }).then((res)=> {
+                if(res.code == 200) {
+                    this.$emit('changeLogs', { "permit": this.sendMsgData.permit, "logs": res.entry_log })
+                    this.closeMsgModal()
+                }
+            }).catch((xhr) => {console.log(xhr)})
         },
         closeMsgModal() {
             this.customize = false;

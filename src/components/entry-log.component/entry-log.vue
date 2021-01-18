@@ -1,5 +1,5 @@
 <template>
-    <ul class="entry-log pt10 pb10">
+    <ul class="entry-log pt10 pb10" :id="logs.permit">
         <vue-scroll :ops="ops">
             <li v-for="(log, index) in logs.entry_log" :key="index">
                 <div class="entry-log-type" v-if="log.login">
@@ -20,7 +20,7 @@
                 </div>
                 <div class="entry-log-type" v-if="log.error_screen">
                     <span class="monitor">{{ $t('monitor.screen') }}</span>
-                    <img src="https:dev.eztest.org/media/photo/556590/c979b5eff9f94558979602e2016d2647.jpg" width="120" height="90">
+                    <img :src="log.error_screen.photo_url" width="120" height="90">
                     <div>
                         <p>{{log.error_screen.time}}</p>
                         <p>{{ $t('monitor.type') }}{{log.error_screen.screen_type}}</p>
@@ -83,6 +83,18 @@ export default {
             type: Object,
             dafault: {}
         },
+    },
+    watch:{
+        partInfo(){
+            console.log({PART:this.partInfo})
+            this.infos = this.partInfo;
+        }
+    },
+    methods: {
+        getLogs(data) {
+            console.log(data, '----msg  data')
+            this.logs.entry_log = data.logs;
+        }
     }
 }
 </script>

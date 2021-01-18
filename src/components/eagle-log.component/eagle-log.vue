@@ -1,9 +1,9 @@
 <template>
-    <div>
+    <div :id="logs.permit">
         <p class="tag-monitor-status"><i class="ez-icon-font">&#xe95c;</i> 运行中</p>
         <div class="eagle-show">
             <img src="" class="eagle-photo" width="100%">
-            <video class="eagle-video" muted="" autoplay="" playsinline=""></video>
+            <video class="eagle-video" ref="eagle_vidoe" muted autoplay playsinline></video>
         </div>
         <ul class="eagle-entry-log pt10 pb10">
             <vue-scroll :ops="ops">

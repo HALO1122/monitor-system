@@ -58,3 +58,12 @@ export function sendEntryMsg (config) {
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }
+
+// 监考截图
+export function screenshotEntry (config) {
+    let Obj = {
+        url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+'/entrylog/',
+        method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}

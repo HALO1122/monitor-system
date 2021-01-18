@@ -15,32 +15,32 @@
                         <p class="video-tag-tip">
                             <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">运行中</span>
                             <i v-show="item.pinup" class="ez-icon-font txt-24px icon-dingzhu">&#xe80d;</i>
-                            <i  v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80e;</i>
+                            <i v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80e;</i>
                         </p>
                         <p class="tag-abnormal" v-show="item.monitor_photo_count">{{ $t('monitor.abnormal') }}</p>
                         <img class="entry-picture mb5" v-show="!item.isVideo" ref="entry_img" :src="item.photo_url">
-                        <video id="entry_video" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
+                        <video :id="item.permit" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
                     </div>
                     <p class="icon-event-content">
                         <i class="ez-icon-font txt-18px" @click="pingVideo(item)">&#xe804;</i>
                         <i v-if="item.audio_monitor" @click="controlSound(item, $event)" class="ez-icon-font txt-18px" v-html="sound"></i>
                         <i v-if="openVideo" @click="openVideo(item)" class="ez-icon-font txt-18px">&#xe66c;</i>
                         <i class="ez-icon-font txt-18px" @click="sendMessage(item)">&#xe63b;</i>
-                        <i class="ez-icon-font txt-18px" @click="Screenshot(item)">&#xe807;</i>
+                        <i class="ez-icon-font txt-18px" @click="screenshotCut(item)">&#xe807;</i>
                     </p>
                     <div class="entry-event-block" v-if="!item.eagle_eye">
                         <p class="double-video" v-if="doubleVideo" @click="togglesEventBlock(item, 'one')"></p>
-                        <entry-log :entryLog="item"></entry-log>
+                        <entry-log :entryLog="item" ref="_entryLog"></entry-log>
                     </div>
                     <div class="eagle-event-block" v-if="item.eagle_eye">
                         <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
-                        <eagle-log :eagleLog="item"></eagle-log>
+                        <eagle-log :eagleLog="item" ref="_eagleLog"></eagle-log>
                     </div>
                     <div class="entry-information">
                         <p><span>{{item.permit}} | {{item.full_name}}</span>
                             <span class="icon-num">
                                 <span><i class="ez-icon-font">&#xe81f;</i>{{item.machine_photo_count}}</span>
-                                <span><i class="ez-icon-font">&#xe807;</i>{{item.monitor_photo_count}}</span>
+                                <span><i class="ez-icon-font">&#xe807;</i>{{item.error_screen_photo_count}}</span>
                             </span></p>
                         <p class="exam">
                             <span class="exam-answer">{{ $t('monitor.time_spent') }}{{item.time_spent}}</span>
@@ -51,7 +51,9 @@
             </ul>
         </div>
         <send-message :sendMsgData="sendMsgData" :timerPause="timerPause" :eagle_eye="room_info.eagle_eye"
-            @_timerPause="timerPause = true"></send-message>
+            @_timerPause="timerPause = true" @changeLogs="changeLogs"></send-message>
+        <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
+            @_timerPause="timerPause = true" @changeLogs="changeLogs"></screenshot>
     </div>
 </template>
 
@@ -63,6 +65,7 @@ import navHeader from '@/components/nav-header.component/nav-header'
 import entryLog from '@/components/entry-log.component/entry-log'
 import eagleLog from '@/components/eagle-log.component/eagle-log'
 import sendMessage from '@/components/send-message.component/send-message'
+import screenshot from '@/components/screenshot.component/screenshot'
 export default {
     data() {
         return {
@@ -80,11 +83,12 @@ export default {
             doubleVideo: false,
             entryVideo: {},
             sound: '&#xe806;',
-            sendMsgData: {}
+            sendMsgData: {},
+            screenshotData: {}
         }
     },
     components: {
-        entryLog, eagleLog, navHeader, sendMessage
+        entryLog, eagleLog, navHeader, sendMessage, screenshot
     },
     created() {
         this.role = this.$route.query.role;
@@ -161,6 +165,7 @@ export default {
                     res.data.pinup = false;
                     res.data.openSound = false;
                     res.data.openMessageModal = false;
+                    res.data.openScreenshotModal = false;
                     self.entryInfo.push(res.data);
                     console.log(this.entryInfo, 'entry-res')
                 }
@@ -188,7 +193,41 @@ export default {
             this.sendMsgData = item;
             this.timerPause = false;
         },
+        screenshotCut(item) {
+            item.openScreenshotModal = true;
+            this.screenshotData = item;
+            this.timerPause = false;
+            let _entryVideos = this.$refs.entry_video,
+                screenshotModal = this.$refs.screenshot;
+            for (let i = 0, len = _entryVideos.length; i < len; i++) {
+                if ($(_entryVideos[i]).attr("id") == item.permit) {
+                    screenshotModal.getVideo(_entryVideos[i])
+                }
+            }
+        },
+        changeLogs(data) {
+            console.log(data, 'data//////////data')
+            let _entryLogs = this.$refs._entryLog,
+                _singleEntryInfo = this.entryInfo;
+            for (let i = 0, len = _entryLogs.length; i < len; i++) {
+                console.log(_entryLogs[i].$el, 'entry-log---ul')
+                if ($(_entryLogs[i].$el).attr("id") == data.permit) {
+                    _entryLogs[i].getLogs(data)
+                }
+            }
+            if (data.type == 'screenshot') {
+                console.log(this.entryInfo, 'entryInfo----screenshot');
+                for (let i = 0, len = _singleEntryInfo.length; i < len; i++) {
+                    console.log(_singleEntryInfo[i], '_singleEntryInfo---ul')
+                    if (_singleEntryInfo[i].permit == data.permit) {
+                        _singleEntryInfo[i].machine_photo_count = data.machine_photo_count;
+                        _singleEntryInfo[i].error_screen_photo_count = data.error_screen_photo_count;
+                    }
+                }
+            }
+        },
         getPrevDta() {
+            this.entryInfo.entry_log
             this.entryInfo.pop(0,1);
             console.log(this.entryInfo,'prev')
         },

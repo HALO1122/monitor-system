@@ -2,7 +2,6 @@ import Vue from 'vue';
 import store from '@/store';
 import self from '@/main';
 import vueSocketIo from "vue-socket.io";
-import {entry_list} from './monitorwall';
 import { saveProctorSocketId } from '@/utils/api.js'
     
 const Peer = require('simple-peer'),
@@ -17,7 +16,6 @@ export function openSocket(res) {
         })
     );
     const Role = `${store.state.global.role}`;
-    console.log(entry_list, 'that*****************')
     // 监听 socket
     self.sockets.subscribe('message', data => {
         console.log('message received', data)
@@ -74,7 +72,8 @@ export function openSocket(res) {
 }
 
 export function connect(res, action, i, refs) {
-    console.log(res,action, i, refs,'event')
+    console.log(res,action, i,'event')
+    console.log(refs, 'refs')
     let peer = new Peer();
     peers[peer._id] = peer;
 
