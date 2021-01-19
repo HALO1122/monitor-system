@@ -21,7 +21,7 @@
                 <span class="online">{{ $t('monitor.online') }}{{roomInfo.entries_online_count}}</span>
                 <span class="complete">{{ $t('monitor.complete') }}{{roomInfo.entries_achieve_count}}</span>
                 <span class="interrupt">{{ $t('monitor.interrupt') }}{{roomInfo.entries_break_off_count}}</span>
-                <button class="btn btn-refresh"><i class="ez-icon-font txt-12px">&#xe7d3;</i>&nbsp;{{ $t('monitor.refresh') }}</button>
+                <button class="btn btn-refresh" @click="refreshRoomMsg()"><i class="ez-icon-font txt-12px">&#xe7d3;</i>&nbsp;{{ $t('monitor.refresh') }}</button>
             </p>
             <span>{{ $t('monitor.proctor') }}{{roomInfo.superviser_name}}</span>
             <button class="btn-end-proctor" v-if="endExam">{{ $t('monitor.endExam') }}</button>
@@ -57,6 +57,9 @@ export default {
     methods: {
         controlHandsup() {
             this.handsUp = !this.handsUp
+        },
+        refreshRoomMsg() {
+            this.$emit('getRoomMsg', 'refresh')
         },
         hoverShowTime() { this.showExamTime = true },
         leaverShowTime() { this.showExamTime = false }

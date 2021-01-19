@@ -1,7 +1,7 @@
 <template>
     <div class="wrap-room-wall">
         <!-- 头部班级信息 -->
-        <nav-header :roomInfo="room_info" :endExam="endExam" :timerNum="timerNum"></nav-header>
+        <nav-header :roomInfo="room_info" :endExam="endExam" :timerNum="timerNum" @getRoomMsg="initMonitorRoom"></nav-header>
         <!-- 展示内容---无考生 -->
         <div class="room-video-tip txt-18px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
         <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevDta()"><i class="icon-nav-btnPrev"></i></span>
@@ -9,7 +9,7 @@
         <!-- 展示内容---有考生 -->
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
-                <li class="room-video-li" v-for="item in entryInfo" :key="item.permit">
+                <li class="room-video-li" v-for="(item, index) in entryInfo" :key="index" ref="curLi" :permit="item.permit">
                     <span class="video-loading-wrap"></span>
                     <div class="video-entry-content">
                         <p class="video-tag-tip">
@@ -59,7 +59,7 @@
 
 <script>
 import { mapState } from "vuex";
-import { openSocket, connect } from './monitorwall.js'
+import { openSocket, connect, destroyPeer } from './monitorwall.js'
 import { getMonitorRoom, getSingleEntry } from '@/utils/api.js'
 import navHeader from '@/components/nav-header.component/nav-header'
 import entryLog from '@/components/entry-log.component/entry-log'
@@ -78,8 +78,10 @@ export default {
             openVideo: false,
             endExam: false,
             entryInfo: [],
-            entry_list: [],
-            entryIndex : 0,
+            entryIndex: 0,     // 某个考生在考生列表的索引值
+            whole_list: [],    // 所有考生列表
+            entry_list: [],    // 考生数组,
+            fixed_list: [],     // 存放钉住考生
             doubleVideo: false,
             entryVideo: {},
             sound: '&#xe806;',
@@ -103,7 +105,7 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
-            this.initMonitorRoom();
+            this.initMonitorRoom('init');
         });
     },
     computed: {
@@ -112,69 +114,98 @@ export default {
         })
     },
     methods: {
-        initMonitorRoom() {
+        initMonitorRoom(action) {
             getMonitorRoom().then(res => {
                 let that = this;
                 that.room_info = res;
                 that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
                     that.permitIsEmpty = false;
-                    openSocket(that.room_info);
-                    // 初始渲染5个考生
-                    this.entry_list = res.entries_online.slice(this.entryIndex, 5);
-                    console.log(this.entry_list, '初始化')
-                    this.initStudentVideo(this.entry_list, 'all');
+                    that.whole_list = res.entries_online;
+                    if(action == 'init') { // 初始渲染5个考生
+                        openSocket(that.room_info);
+                        that.entry_list = that.whole_list.slice(this.entryIndex, 5);
+                        that.initStudentVideo(that.entry_list, 'all');
+                        that.countDown();
+                        console.log(that.entry_list, '初始化');
+                    }
                 } else {
                     that.permitIsEmpty = true;
                 }
-                that.timeClock = setInterval(function(){
-                    if(that.timerPause) {
-                        that.timerNum--;
-                        if (that.timerNum == 0) { 
-                            that.timerNum = 10;
-                            // autoRefresh();
-                            clearInterval(that.timeClock)
-                        }
-                    } else {
-                        that.timerNum = that.timerNum;
-                    }
-                }, 1000)
+
             })
             .catch(error => {
                 console.log(error);
             }); 
         },
+        countDown() {
+            let that = this;
+            that.timeClock = setInterval(function(){
+                if(that.timerPause) {
+                    that.timerNum--;
+                    if (that.timerNum == 0) { 
+                        that.timerNum = 10;
+                        // that.autoRefresh();                                                     
+                        // clearInterval(that.timeClock)
+                    }
+                } else {
+                    that.timerNum = that.timerNum;
+                }
+            }, 1000)
+        },
         initStudentVideo(entry_list, action){
+            console.log(entry_list, 'entry_list--------entry_list')
             if(action == 'all') {
                 for (let i = 0, len = entry_list.length; i < len; i++ ) {
                     this.initSingleVideo(entry_list[i], action, i);
                 }
             } else {
-                this.initSingleVideo(entry_list[i], action, i);
+                this.initSingleVideo(entry_list[0], action, 0);
             }
         },
         initSingleVideo(permit, action, i) {
             let msg = {"permit": permit},
-                self = this;
+                that = this;
             getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
-                    connect(res.data, action, i, self.$refs);
-                    res.data.eagle_eye = self.room_info.eagle_eye;
-                    res.data.audio_monitor = self.room_info.audio_monitor;
+                    // connect(res.data, action, i, that.$refs);
+                    res.data.eagle_eye = that.room_info.eagle_eye;
+                    res.data.audio_monitor = that.room_info.audio_monitor;
                     res.data.isVideo = false;
                     res.data.pinup = false;
                     res.data.openSound = false;
                     res.data.openMessageModal = false;
                     res.data.openScreenshotModal = false;
-                    self.entryInfo.push(res.data);
-                    console.log(this.entryInfo, 'entry-res')
+                    that.entryInfo.push(res.data);
+                    that.removeEntry(action, that.entryInfo);
                 }
 
             })
         },
+        removeEntry(action, entry_info) {
+            let pinupList = [], removeList = [];
+            if (action == 'next') {
+                // 合并[钉住的考生] 和 [删除没有钉住的考生第一个]
+                entry_info.filter(item => { !item.pinup ? removeList.push(item) : pinupList.push(item); });
+                removeList.splice(0, 1);
+                this.entryInfo = pinupList.concat(removeList)
+                console.log(entry_info, 'entry_info');
+            } else if (action == 'prev') {
+                entry_info.pop();
+            }
+        },
         pingVideo(item) {
-            console.log(item, 'item')
-            item.pinup = !item.pinup;
+            if (item.pinup) {
+                item.pinup = false;
+                // 从数组中取消钉住的考生
+                this.fixed_list.splice(this.fixed_list.indexOf(item.permit), 1);
+            } else {
+                item.pinup = true;
+                // 将钉住的考生存放数组中并去重
+                this.entryInfo.filter((item, index) => { if(item.pinup) this.fixed_list.push(item.permit) });
+                this.fixed_list = this.fixed_list.filter(function(item, index, array) { return array.indexOf(item) === index; });
+            }
+            console.log(this.fixed_list, 'this.fixed_list')
         },
         controlSound(item, e) {
             let video = $(e.target).parents("li").find("#entry_video")[0];
@@ -205,6 +236,7 @@ export default {
                 }
             }
         },
+        // 更换日志
         changeLogs(data) {
             console.log(data, 'data//////////data')
             let _entryLogs = this.$refs._entryLog,
@@ -216,7 +248,6 @@ export default {
                 }
             }
             if (data.type == 'screenshot') {
-                console.log(this.entryInfo, 'entryInfo----screenshot');
                 for (let i = 0, len = _singleEntryInfo.length; i < len; i++) {
                     console.log(_singleEntryInfo[i], '_singleEntryInfo---ul')
                     if (_singleEntryInfo[i].permit == data.permit) {
@@ -227,16 +258,57 @@ export default {
             }
         },
         getPrevDta() {
-            this.entryInfo.entry_log
-            this.entryInfo.pop(0,1);
             console.log(this.entryInfo,'prev')
         },
         getNextDta() {
-            this.entryInfo.splice(0,1);
-            console.log(this.entryInfo,'next')
+            let singleLi = $('.room-video-li');
+            //考生小于5个人，不刷新，不移除第一个考生，不请求重复的考生
+            // if (singleLi.length > 4) { this.autoToggleSingle(); }
+            this.autoToggleSingle();
+        },
+        autoRefresh() {
+            // this.autoToggleSingle();
+        },
+        autoToggleSingle() {
+            let that = this,
+                singleLi = $('.room-video-li'),
+                lastPermit = that.entryInfo[singleLi.length - 1].permit;
+            that.entry_list = []; 
+
+            // 过滤钉住的考生
+            that.whole_list = that.whole_list.filter(item => !that.fixed_list.includes(item) );
+            // 最后一个考生在列表中的索引值、浏览到最后一个重新请求列表
+            that.entryIndex == undefined ? that.entryIndex = 0 : that.entryIndex = that.findEntryIndex(that.whole_list, lastPermit);
+            console.log(that.entryIndex, 'that.entryIndex')
+
+            if (that.entryIndex != that.whole_list.length - 1) {
+                that.entry_list = that.whole_list.slice(that.entryIndex+1, that.entryIndex+2);
+            } else {
+                that.initMonitorRoom('reload');
+                that.entry_list = that.whole_list.slice(0, 1);
+            }
+
+            if (that.entry_list.length != 0) {
+                that.initStudentVideo(that.entry_list, 'next');
+                // if (singleLi.length > 5) {
+                    singleLi.filter((index, item) => {
+                        // if($(item).attr("permit") == fixed_list[0].permit) {
+                        //     fixed_list.push(item)
+                        //     // destroyPeer(item);
+                        //     console.log(item, 'destor---')
+                        // }
+                    })
+                // }
+            }
         },
         togglesEventBlock(item, toggles) {
             toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
+        },
+        // 寻找每个页面最后一个考生在列表中的索引
+        findEntryIndex(arr, ele) {
+            for(let i=0, len = arr.length; i<len; i++){
+                if(arr[i] == ele){ return i; }              
+            }
         }
     }
 }

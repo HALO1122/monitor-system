@@ -3,7 +3,7 @@ import store from '../store'
 
 // 添加请求拦截器
 axios.interceptors.request.use(config => {
-    let token = store.state.global.token;
+    let token = sessionStorage.token;
     if (token != '') {
         config.headers['AUTHORIZATIONROOM'] = 'Token '+token;
         config.headers['Content-Type'] = 'application/json; charset=UTF-8';

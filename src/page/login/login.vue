@@ -51,6 +51,7 @@ export default {
                 if (res.code == 200) {
                     this.error = false;
                     this.$store.commit('SET_TOKEN', res.token);
+                    sessionStorage.token = res.token;
                     this.$store.commit('ROOM_ID', res.room_id);
                     this.$store.commit('TEACHER_ID', res.teacher_id);
                     this.$router.push('/role');

@@ -27,8 +27,6 @@ const i18n = new VueI18n({
   }
 })
 
-
-
 Vue.use(
   new vueSocketIo({
       debug: false,

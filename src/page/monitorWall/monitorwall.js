@@ -2,11 +2,11 @@ import Vue from 'vue';
 import store from '@/store';
 import self from '@/main';
 import vueSocketIo from "vue-socket.io";
+import $ from 'jquery';
 import { saveProctorSocketId } from '@/utils/api.js'
     
 const Peer = require('simple-peer'),
-    peers = {},
-    to_peers = {};
+    peers = {}, to_peers = {};
 
 export function openSocket(res) {
     Vue.use(
@@ -18,7 +18,7 @@ export function openSocket(res) {
     const Role = `${store.state.global.role}`;
     // 监听 socket
     self.sockets.subscribe('message', data => {
-        console.log('message received', data)
+        // console.log('message received', data)
         switch (data.type) {
             case "signal_called":
                 var peer = peers[data.to_peer];
@@ -63,7 +63,6 @@ export function openSocket(res) {
     // 连接socket & 保存监考老师socketId
     self.$socket.on("connect", function () {
         console.log(self.$socket,'socket---connect')
-
         let msg = {"teacher_socket": self.$socket.id};
         if (Role == 'proctor') {
             saveProctorSocketId({ data: msg }).then(res => { }).catch(err => { console.log(err)  })
@@ -72,11 +71,17 @@ export function openSocket(res) {
 }
 
 export function connect(res, action, i, refs) {
-    console.log(res,action, i,'event')
     console.log(refs, 'refs')
-    let peer = new Peer();
+    var peer = new Peer();
     peers[peer._id] = peer;
 
+    if (action == 'all') {
+        i = i;
+    } else if(action == 'next') {
+        i = refs.curLi.length - 1;
+    } else if(action == 'prev') {
+        i = 0;
+    }
     peer.on('signal', function (data) {
         var pkt = {
             type: "signal",
@@ -85,7 +90,7 @@ export function connect(res, action, i, refs) {
             to_peer: to_peers[peer._id],
             msg: data
         }
-        console.log(pkt, 'pkt')
+        // console.log(pkt, 'pkt')
         self.$socket.emit("message", pkt);
     });
 
@@ -95,6 +100,7 @@ export function connect(res, action, i, refs) {
 
     peer.on('stream', function(stream) {
         refs.entry_video[i].srcObject = stream;
+        $(refs.curLi[i]).attr("peer_id", peer._id);
         res.isVideo = true;
         console.log(stream,'stream available: ');
     });
@@ -103,8 +109,7 @@ export function connect(res, action, i, refs) {
     });
     peer.on('close', function() {
         res.isVideo = false;
-        console.log(res, 'res')
-        console.log('peer------------------closed');
+        console.log(res, 'peer------------------closed');
     });
     peer.on('error', function(error) {
         console.log('error: ',error);
@@ -117,4 +122,15 @@ export function connect(res, action, i, refs) {
     }
     console.log(pkt, 'pkt')
     self.$socket.emit("message", pkt)
+}
+
+export function destroyPeer(removeLi, type) {
+    // if (type != 'call') {
+    //     $(removeLi).remove();
+    // }
+    if ($(removeLi).attr("peer_id") != undefined && $(removeLi).attr("peer_id") !=  "") { peers[$(removeLi).attr("peer_id")].destroy(); }
+    if ($(removeLi).attr("eagle_peer_id") != undefined && $(removeLi).attr("eagle_peer_id") !=  "") { peers[$(removeLi).attr("eagle_peer_id")].destroy(); }
+    delete peers[$(removeLi).attr("peer_id")];
+    delete peers[$(removeLi).attr("eagle_peer_id")];
+    delete to_peers[$(removeLi).attr("peer_id")];
 }
