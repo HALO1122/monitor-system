@@ -4,8 +4,8 @@
         <nav-header :roomInfo="room_info" :endExam="endExam" :timerNum="timerNum" @getRoomMsg="initMonitorRoom"></nav-header>
         <!-- 展示内容---无考生 -->
         <div class="room-video-tip txt-18px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
-        <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevDta()"><i class="icon-nav-btnPrev"></i></span>
-        <span class="nav-btnNext" v-if="!permitIsEmpty" @click="getNextDta()"><i class="icon-nav-btnNext"></i></span>
+        <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevSingle()"><i class="icon-nav-btnPrev"></i></span>
+        <span class="nav-btnNext" v-if="!permitIsEmpty" @click="getNextSingle()"><i class="icon-nav-btnNext"></i></span>
         <!-- 展示内容---有考生 -->
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
@@ -145,8 +145,8 @@ export default {
                     that.timerNum--;
                     if (that.timerNum == 0) { 
                         that.timerNum = 10;
-                        // that.autoRefresh();                                                     
-                        // clearInterval(that.timeClock)
+                        // that.autoRefresh();                                    
+                        clearInterval(that.timeClock)
                     }
                 } else {
                     that.timerNum = that.timerNum;
@@ -163,10 +163,10 @@ export default {
                 this.initSingleVideo(entry_list[0], action, 0);
             }
         },
-        initSingleVideo(permit, action, i) {
+        async initSingleVideo(permit, action, i) {
             let msg = {"permit": permit},
                 that = this;
-            getSingleEntry({ data: msg }).then(res => {
+            await getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
                     // connect(res.data, action, i, that.$refs);
                     res.data.eagle_eye = that.room_info.eagle_eye;
@@ -176,7 +176,11 @@ export default {
                     res.data.openSound = false;
                     res.data.openMessageModal = false;
                     res.data.openScreenshotModal = false;
-                    that.entryInfo.push(res.data);
+                    if (action != 'prev') {
+                        that.entryInfo.push(res.data);
+                    } else{
+                        that.entryInfo.unshift(res.data);
+                    }
                     that.removeEntry(action, that.entryInfo);
                 }
 
@@ -184,15 +188,21 @@ export default {
         },
         removeEntry(action, entry_info) {
             let pinupList = [], removeList = [];
+            entry_info.filter(item => { !item.pinup ? removeList.push(item) : pinupList.push(item); });
+
+            console.log(entry_info, 'entry_info')
             if (action == 'next') {
                 // 合并[钉住的考生] 和 [删除没有钉住的考生第一个]
-                entry_info.filter(item => { !item.pinup ? removeList.push(item) : pinupList.push(item); });
-                removeList.splice(0, 1);
-                this.entryInfo = pinupList.concat(removeList)
-                console.log(entry_info, 'entry_info');
+                removeList.splice(0,1);
+                this.entryInfo = pinupList.concat(removeList);
+                // destroyPeer(item);
+                // 获取remove掉的item.permit 根据permit找到对应li，销毁上面的peer_id
             } else if (action == 'prev') {
-                entry_info.pop();
+                removeList.pop();
+                this.entryInfo = pinupList.concat(removeList)
             }
+            console.log(entry_info, 'entry_info');
+            console.log(removeList, 'removeList');
         },
         pingVideo(item) {
             if (item.pinup) {
@@ -257,23 +267,37 @@ export default {
                 }
             }
         },
-        getPrevDta() {
-            console.log(this.entryInfo,'prev')
-        },
-        getNextDta() {
-            let singleLi = $('.room-video-li');
-            //考生小于5个人，不刷新，不移除第一个考生，不请求重复的考生
-            // if (singleLi.length > 4) { this.autoToggleSingle(); }
+        autoRefresh() {
             this.autoToggleSingle();
         },
-        autoRefresh() {
-            // this.autoToggleSingle();
+        getPrevSingle() {
+            // 获取列表中第一个没有被钉住的考生的permit
+            let that = this,
+                not_pinned_list = [],
+                firstEntryIndex = 0;
+            that.entry_list = [];
+            
+            that.entryInfo.forEach(item => {
+                if (!item.pinup) { not_pinned_list.push(item.permit); }
+            })
+            console.log(not_pinned_list, 'not_pinned_list')
+            firstEntryIndex = that.findEntryIndex(that.whole_list, not_pinned_list[0]);
+
+            if (firstEntryIndex != 0) {
+                that.whole_list = that.whole_list.filter(item => !that.fixed_list.includes(item) );
+                that.entry_list.push(that.whole_list[firstEntryIndex-1]);
+                that.initStudentVideo(that.entry_list, 'prev');
+            } 
+        },
+        getNextSingle() {
+            let singleLi = $('.room-video-li');
+            if (singleLi.length > 4) { this.autoToggleSingle(); }
         },
         autoToggleSingle() {
             let that = this,
                 singleLi = $('.room-video-li'),
                 lastPermit = that.entryInfo[singleLi.length - 1].permit;
-            that.entry_list = []; 
+            that.entry_list = [];
 
             // 过滤钉住的考生
             that.whole_list = that.whole_list.filter(item => !that.fixed_list.includes(item) );
@@ -288,18 +312,7 @@ export default {
                 that.entry_list = that.whole_list.slice(0, 1);
             }
 
-            if (that.entry_list.length != 0) {
-                that.initStudentVideo(that.entry_list, 'next');
-                // if (singleLi.length > 5) {
-                    singleLi.filter((index, item) => {
-                        // if($(item).attr("permit") == fixed_list[0].permit) {
-                        //     fixed_list.push(item)
-                        //     // destroyPeer(item);
-                        //     console.log(item, 'destor---')
-                        // }
-                    })
-                // }
-            }
+            if (that.entry_list.length != 0) that.initStudentVideo(that.entry_list, 'next');
         },
         togglesEventBlock(item, toggles) {
             toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
