@@ -50,10 +50,11 @@ export default {
             RoomLogin({ data:msg }).then(res => {
                 if (res.code == 200) {
                     this.error = false;
-                    this.$store.commit('SET_TOKEN', res.token);
                     sessionStorage.token = res.token;
+                    this.$store.commit('SET_TOKEN', res.token);
                     this.$store.commit('ROOM_ID', res.room_id);
                     this.$store.commit('TEACHER_ID', res.teacher_id);
+                    this.$store.commit('SET_SOCKET', res.peer_setting);
                     this.$router.push('/role');
                 } else{
                     this.error = true;

@@ -3,7 +3,8 @@ const global = {
         token: '',
         roomId: '',
         teacherId: '',
-        role: ''
+        role: '',
+        socket: {}
     },
     mutations: {
         SET_TOKEN: (state, token) => {
@@ -17,6 +18,9 @@ const global = {
         },
         SAVE_ROLE: (state, role)=> {
             state.role = role;
+        },
+        SET_SOCKET: (state, socket)=> {
+            state.socket = socket;
         }
     },
     actions: {
@@ -31,6 +35,9 @@ const global = {
         },
         role({ commit }, role) {
             commit('SAVE_ROLE', role)
+        },
+        socket({ commit }, socket) {
+            commit('SET_SOCKET', socket)
         }
     }
 }

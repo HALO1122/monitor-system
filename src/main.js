@@ -9,8 +9,7 @@ import vuescroll from 'vuescroll';
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.min.js'
-// socket
-import vueSocketIo from "vue-socket.io";
+
 // public css
 import '@/assets/style/_icon.scss';
 import '@/assets/style/_common.scss';
@@ -26,13 +25,6 @@ const i18n = new VueI18n({
     'en': require('@/assets/i18n/en.json') 
   }
 })
-
-Vue.use(
-  new vueSocketIo({
-      debug: false,
-      connection: "https://peer7.eztest.org:8888",
-  })
-);
 
 Vue.config.productionTip = false;
 

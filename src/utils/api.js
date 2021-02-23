@@ -24,9 +24,8 @@ export function saveProctorPhoto (config) {
 // 获取分班信息
 export function getMonitorRoom (config) {
     let Obj = {
-        // url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+
-        //     '/teacher/'+`${store.state.global.teacherId}`+'/monitor_room/',
-        url: '/schedule/session/3163/room/1119/teacher/235/monitor_room/',
+        url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+
+            '/teacher/'+`${store.state.global.teacherId}`+'/monitor_room/',
         method: 'GET'
     }
     return axiosConfig(Object.assign({}, Obj, config))
@@ -64,6 +63,16 @@ export function screenshotEntry (config) {
     let Obj = {
         url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+'/entrylog/',
         method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}
+
+// 查询单个考生信息
+export function searchSingleEntry (config) {
+    console.log(config, 'config')
+    let Obj = {
+        url: '/schedule/session/3163/room/'+`${store.state.global.roomId}`+'/entry_search/?q='+config.data,
+        method: 'GET'
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }

@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { connectSocket } from '@/utils/socket.js'
 export default {
   created() {
     //在页面加载时读取sessionStorage里的状态信息
@@ -16,6 +17,9 @@ export default {
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state));
     });
+
+    // 打开socket连接
+    connectSocket();
   }
 }
 </script>

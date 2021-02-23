@@ -92,6 +92,7 @@ export default {
             }
             console.log(msgData, 'msgData')
             this.$socket.emit("message", pkt);
+            // 将发送的数据存放接口日志里
             sendEntryMsg({ data: msgData }).then((res)=> {
                 if(res.code == 200) {
                     this.$emit('changeLogs', { "permit": this.sendMsgData.permit, "logs": res.entry_log })
