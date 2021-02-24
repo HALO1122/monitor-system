@@ -21,7 +21,7 @@
                 </li>
             </vue-scroll>
         </ul>
-        <i class="ez-icon-font eagle-cut txt-20px">&#xe807;</i>
+        <i class="ez-icon-font eagle-cut txt-18px">&#xe807;</i>
     </div>
 </template>
 
@@ -52,9 +52,6 @@ export default {
                 }
             }
         }
-    },
-    mounted() {
-        console.log(this.eagleLog, 'eagle_socket_id')
     },
     computed: {
         logs (){

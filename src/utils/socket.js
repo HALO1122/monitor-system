@@ -7,7 +7,7 @@ console.log(`${store.state.global.socket.singal_server}`, '`${store.state.global
 export function connectSocket () {
   Vue.use(
     new vueSocketIo({
-      debug: true,
+      debug: false,
       connection: `${store.state.global.socket.singal_server}`
     })
   );

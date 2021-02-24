@@ -9,7 +9,7 @@
     .nav-btnPrev, .nav-btnNext {
         font-size: 60px;
         position: absolute;
-        top: 50%;
+        top: 40%;
         z-index: 99;
         i{
             width: 100px;
@@ -141,4 +141,33 @@
             }
         }  
     }
+    .monitor-error-tip{
+        position: absolute;
+        left: 40%;
+        color: #fff;
+        background-color: rgba(130,130,130,.9);
+        padding: 6px 16px;
+        border-radius: 6px;
+        vertical-align: middle;
+        i{ font-size: 14px !important; }
+    }
+    #search_wrap{
+        display: flex;
+        float: right;
+        width: 12%;
+        font-size: 14px;
+        input{
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+        .btn-search {
+            color: #ffffff;
+            background-color: #0195FF !important;
+            padding: 6px 10px;
+            border: none;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+    }
+
 }

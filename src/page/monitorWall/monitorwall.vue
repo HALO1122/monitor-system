@@ -2,10 +2,18 @@
     <div class="wrap-room-wall">
         <!-- 头部班级信息 -->
         <nav-header :roomInfo="room_info" :endExam="endExam" :timerNum="timerNum" @getRoomMsg="initMonitorRoom"></nav-header>
+        <div id="search_wrap" class="mr20 mt10 mb10">
+            <input type="text" class="form-control" v-model="searchData" :placeholder="$t('monitor.search._place')" name="keyword">
+            <button class="btn-search" type="submit" @click="search_entry()"><i class="ez-icon-font icon-monitor">&#xe6dc;</i></button>
+        </div>
         <!-- 展示内容---无考生 -->
         <div class="room-video-tip txt-18px" v-if="permitIsEmpty">{{ $t('monitor.empty') }}</div>
         <span class="nav-btnPrev" v-if="!permitIsEmpty" @click="getPrevSingle()"><i class="icon-nav-btnPrev"></i></span>
         <span class="nav-btnNext" v-if="!permitIsEmpty" @click="getNextSingle()"><i class="icon-nav-btnNext"></i></span>
+        <p class="monitor-error-tip mt10" v-if="monitorError">
+            <i class="ez-icon-font">&#xe721;</i>&nbsp;&nbsp;<span>{{monitorErrorTip}}</span>
+            <i class="ez-icon-font ml20" @click="monitorError = false">&#xe7bf;</i>
+        </p>
         <!-- 展示内容---有考生 -->
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
@@ -54,18 +62,20 @@
             @_timerPause="timerPause = true" @changeLogs="changeLogs"></send-message>
         <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
             @_timerPause="timerPause = true" @changeLogs="changeLogs"></screenshot>
+        <!-- <search-entry :search_entry_data="search_entry_data"></search-entry> -->
     </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
-import { openSocket, connect, destroyPeer } from './monitorwall.js'
-import { getMonitorRoom, getSingleEntry } from '@/utils/api.js'
+import { getMonitorRoom, getSingleEntry, searchSingleEntry, saveProctorSocketId } from '@/utils/api.js'
 import navHeader from '@/components/nav-header.component/nav-header'
 import entryLog from '@/components/entry-log.component/entry-log'
 import eagleLog from '@/components/eagle-log.component/eagle-log'
 import sendMessage from '@/components/send-message.component/send-message'
 import screenshot from '@/components/screenshot.component/screenshot'
+import searchEntry from '@/components/search-entry.component/search-entry'
+const Peer = require('simple-peer'), peers = {}, to_peers = {};
 export default {
     data() {
         return {
@@ -86,48 +96,91 @@ export default {
             entryVideo: {},
             sound: '&#xe806;',
             sendMsgData: {},
-            screenshotData: {}
+            screenshotData: {},
+            searchData: "",
+            monitorError: false,
+            monitorErrorTip: "这是错误提示",
+            search_entry_data: []
         }
     },
     components: {
-        entryLog, eagleLog, navHeader, sendMessage, screenshot
+        entryLog, eagleLog, navHeader, sendMessage, screenshot, searchEntry
     },
     created() {
         this.role = this.$route.query.role;
-        if (this.role == "patrol") {
-            this.openVideo = false;
-            this.endExam = false;
-        } else {
-            this.openVideo = true;
-            this.endExam = true;
-        }
         this.$store.commit('SAVE_ROLE', this.role);
+        if (this.role == "patrol") {
+            this.openVideo = false; this.endExam = false;
+        } else {
+            this.openVideo = true; this.endExam = true;
+        }
     },
     mounted() {
-        this.$nextTick(() => {
-            this.initMonitorRoom('init');
-        });
+        this.initMonitorRoom('init');
     },
     computed: {
-        ...mapState({
-            global: state=>state.global
-        })
+        ...mapState({ global: state=>state.global })
+    },
+    sockets: {
+        message(data) {
+            console.log(this.sockets,data.type, 'this.sockets**************message')
+            switch (data.type) {
+                case "signal_called":
+                    var peer = peers[data.to_peer];
+                    to_peers[data.to_peer] = data.from_peer;
+                    if ( peer !== null && peer != undefined){
+                        peer.signal(data.msg);
+                    }
+                    break;
+                case "signal":
+                    var peer = peers[data.to_peer];
+                    to_peers[data.to_peer] = data.from_peer;
+                    if ( peer !== null && peer != undefined){
+                        peer.signal(data.msg);
+                    }
+                    break;
+                case "call":
+                    // getLocalStream("", function(){
+                    //     const Tpeer = callConnect(data.from, data.from_peer);
+                    //     if ( Tpeer !== null && Tpeer != undefined) {
+                    //         peers[Tpeer._id] = Tpeer;
+                    //     }
+                    // });
+                    break;
+                case "student_info":
+                    let time = new Date(),
+                        h = (time.getHours() < 10 ? '0'+time.getHours() : time.getHours()) + ':',
+                        m = (time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes());
+                    data.time = h+m;
+                    // completeHandup(data);
+                    break;
+                case "student_cancel_handup":
+                    // cancelHandup(data);
+                    break;
+                case "force_end_exam_sucess":
+                    // endExamSucess(data);
+                    break;
+                case "force_end_exam_fail":
+                    // endExamFail(data);
+                    break;
+            }
+        }
     },
     methods: {
         initMonitorRoom(action) {
             getMonitorRoom().then(res => {
                 let that = this;
                 that.room_info = res;
+                that.$store.commit('SET_SOCKET', res.peer_setting);
                 that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
                     that.permitIsEmpty = false;
                     that.whole_list = res.entries_online;
                     if(action == 'init') { // 初始渲染5个考生
-                        openSocket(that.room_info);
                         that.entry_list = that.whole_list.slice(this.entryIndex, 5);
+                        that.saveSocketId();
                         that.initStudentVideo(that.entry_list, 'all');
                         that.countDown();
-                        console.log(that.entry_list, '初始化');
                     }
                 } else {
                     that.permitIsEmpty = true;
@@ -137,6 +190,13 @@ export default {
             .catch(error => {
                 console.log(error);
             }); 
+        },
+        // 保存监考老师socketId
+        saveSocketId() {
+            if (this.$socket.connected && this.role == 'proctor') {
+                let msg = {"teacher_socket": this.$socket.id};
+                saveProctorSocketId({ data: msg }).then(res => { }).catch(err => { console.log(err)  })
+            }
         },
         countDown() {
             let that = this;
@@ -154,7 +214,7 @@ export default {
             }, 1000)
         },
         initStudentVideo(entry_list, action){
-            console.log(entry_list, 'entry_list--------entry_list')
+            console.log(entry_list, 'entry_list--------')
             if(action == 'all') {
                 for (let i = 0, len = entry_list.length; i < len; i++ ) {
                     this.initSingleVideo(entry_list[i], action, i);
@@ -168,7 +228,7 @@ export default {
                 that = this;
             await getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
-                    // connect(res.data, action, i, that.$refs);
+                    this.connect(res.data, action, i, that.$refs);
                     res.data.eagle_eye = that.room_info.eagle_eye;
                     res.data.audio_monitor = that.room_info.audio_monitor;
                     res.data.isVideo = false;
@@ -181,7 +241,7 @@ export default {
                     } else{
                         that.entryInfo.unshift(res.data);
                     }
-                    that.removeEntry(action, that.entryInfo);
+                    // that.removeEntry(action, that.entryInfo);
                 }
 
             })
@@ -204,6 +264,7 @@ export default {
             console.log(entry_info, 'entry_info');
             console.log(removeList, 'removeList');
         },
+        // 钉住考生
         pingVideo(item) {
             if (item.pinup) {
                 item.pinup = false;
@@ -217,6 +278,7 @@ export default {
             }
             console.log(this.fixed_list, 'this.fixed_list')
         },
+        // 控制考生声音
         controlSound(item, e) {
             let video = $(e.target).parents("li").find("#entry_video")[0];
             item.openSound = !item.openSound;
@@ -229,11 +291,13 @@ export default {
                 this.sound = '&#xe806;';
             }
         },
+        // 监考发送消息
         sendMessage(item) {
             item.openMessageModal = true;
             this.sendMsgData = item;
             this.timerPause = false;
         },
+        // 监考截屏
         screenshotCut(item) {
             item.openScreenshotModal = true;
             this.screenshotData = item;
@@ -248,7 +312,6 @@ export default {
         },
         // 更换日志
         changeLogs(data) {
-            console.log(data, 'data//////////data')
             let _entryLogs = this.$refs._entryLog,
                 _singleEntryInfo = this.entryInfo;
             for (let i = 0, len = _entryLogs.length; i < len; i++) {
@@ -317,11 +380,81 @@ export default {
         togglesEventBlock(item, toggles) {
             toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
         },
+        // 获取查询考生数据
+        search_entry() {
+            console.log(this.searchData, 'searchData')
+            if (this.searchData != "") {
+                searchSingleEntry({ data: this.searchData }).then(res => {
+                    console.log(res, 'search--res')
+                    if (res.code == 200) {
+                        this.search_entry_data = res.data;
+                        this.search_entry_data.openSound = false;
+                        this.search_entry_data.openMessageModal = false;
+                        this.search_entry_data.openScreenshotModal = false;
+                        console.log(this.search_entry_data, 'this.search_entry_data')
+                    } else {
+                        this.monitorError = true,
+                        this.monitorErrorTip = "查询不到该考生！"
+                    }
+                })
+            }
+        },
         // 寻找每个页面最后一个考生在列表中的索引
         findEntryIndex(arr, ele) {
             for(let i=0, len = arr.length; i<len; i++){
                 if(arr[i] == ele){ return i; }              
             }
+        },
+        connect(res, action, i, refs) {
+            let that = this, peer = new Peer();
+            peers[peer._id] = peer;
+
+            if (action == 'all') {
+                i = i;
+            } else if(action == 'next') {
+                i = refs.curLi.length - 1;
+            } else if(action == 'prev') {
+                i = 0;
+            }
+            peer.on('signal', function (data) {
+                var pkt = {
+                    type: "signal",
+                    to: res.socket_id,
+                    from_peer: peer._id,
+                    to_peer: to_peers[peer._id],
+                    msg: data
+                }
+                that.$socket.emit("message", pkt);
+            });
+
+            peer.on('connect', function() {
+                console.log('peer------------------connect');
+            });
+
+            peer.on('stream', function(stream) {
+                refs.entry_video[i].srcObject = stream;
+                $(refs.curLi[i]).attr("peer_id", peer._id);
+                res.isVideo = true;
+                console.log(stream,'stream available: ');
+            });
+            peer.on('data', function(data) {
+                console.log('data available');
+            });
+            peer.on('close', function() {
+                res.isVideo = false;
+                console.log(res, 'peer------------------closed');
+            });
+            peer.on('error', function(error) {
+                console.log('error: ',error);
+            });
+            // make the call
+            var pkt = {
+                type: "call",
+                to: res.socket_id,
+                from_peer: peer._id
+            }
+            console.log(pkt, 'pkt')
+            that.$socket.emit("message", pkt)
         }
     }
 }
