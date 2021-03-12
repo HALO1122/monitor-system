@@ -29,6 +29,7 @@
                         <img class="entry-picture mb5" v-show="!item.isVideo" ref="entry_img" :src="item.photo_url">
                         <video :id="item.permit" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
                     </div>
+                    <!-- icon 事件 -->
                     <p class="icon-event-content">
                         <i class="ez-icon-font txt-18px" @click="pingVideo(item)">&#xe804;</i>
                         <i v-if="item.audio_monitor" @click="controlSound(item, $event)" class="ez-icon-font txt-18px" v-html="sound"></i>
@@ -42,7 +43,8 @@
                     </div>
                     <div class="eagle-event-block" v-if="item.eagle_eye">
                         <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
-                        <eagle-log :eagleLog="item" ref="_eagleLog"></eagle-log>
+                        <eagle-log :eagleLog="item" ref="_eagleLog" :eagle_video_idx="eagle_video_idx" :action="action"
+                            :peers="peers" :to_peers="to_peers"></eagle-log>
                     </div>
                     <div class="entry-information">
                         <p><span>{{item.permit}} | {{item.full_name}}</span>
@@ -59,9 +61,10 @@
             </ul>
         </div>
         <send-message :sendMsgData="sendMsgData" :timerPause="timerPause" :eagle_eye="room_info.eagle_eye"
-            @_timerPause="timerPause = true" @changeLogs="changeLogs"></send-message>
+            @_timerPause="timerPause = true"></send-message>
         <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
-            @_timerPause="timerPause = true" @changeLogs="changeLogs"></screenshot>
+            @_timerPause="timerPause = true"></screenshot>
+            <!--  @changeLogs="changeLogs" -->
         <!-- <search-entry :search_entry_data="search_entry_data"></search-entry> -->
     </div>
 </template>
@@ -75,10 +78,12 @@ import eagleLog from '@/components/eagle-log.component/eagle-log'
 import sendMessage from '@/components/send-message.component/send-message'
 import screenshot from '@/components/screenshot.component/screenshot'
 import searchEntry from '@/components/search-entry.component/search-entry'
-const Peer = require('simple-peer'), peers = {}, to_peers = {};
+const Peer = require('simple-peer');
 export default {
     data() {
         return {
+            peers: {},
+            to_peers: {},
             room_info: {},
             role: "",
             permitIsEmpty: true,
@@ -100,7 +105,9 @@ export default {
             searchData: "",
             monitorError: false,
             monitorErrorTip: "这是错误提示",
-            search_entry_data: []
+            search_entry_data: [],
+            action: '',
+            eagle_video_idx: 0
         }
     },
     components: {
@@ -123,18 +130,18 @@ export default {
     },
     sockets: {
         message(data) {
-            console.log(this.sockets,data.type, 'this.sockets**************message')
+            console.log(data, 'this.sockets**************message')
             switch (data.type) {
                 case "signal_called":
-                    var peer = peers[data.to_peer];
-                    to_peers[data.to_peer] = data.from_peer;
+                    var peer = this.peers[data.to_peer];
+                    this.to_peers[data.to_peer] = data.from_peer;
                     if ( peer !== null && peer != undefined){
                         peer.signal(data.msg);
                     }
                     break;
                 case "signal":
-                    var peer = peers[data.to_peer];
-                    to_peers[data.to_peer] = data.from_peer;
+                    var peer = this.peers[data.to_peer];
+                    this.to_peers[data.to_peer] = data.from_peer;
                     if ( peer !== null && peer != undefined){
                         peer.signal(data.msg);
                     }
@@ -171,7 +178,6 @@ export default {
             getMonitorRoom().then(res => {
                 let that = this;
                 that.room_info = res;
-                that.$store.commit('SET_SOCKET', res.peer_setting);
                 that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
                     that.permitIsEmpty = false;
@@ -186,8 +192,7 @@ export default {
                     that.permitIsEmpty = true;
                 }
 
-            })
-            .catch(error => {
+            }).catch(error => {
                 console.log(error);
             }); 
         },
@@ -228,6 +233,8 @@ export default {
                 that = this;
             await getSingleEntry({ data: msg }).then(res => {
                 if (res.code == 200) {
+                    this.eagle_video_idx = i;
+                    this.action = action;
                     this.connect(res.data, action, i, that.$refs);
                     res.data.eagle_eye = that.room_info.eagle_eye;
                     res.data.audio_monitor = that.room_info.audio_monitor;
@@ -243,7 +250,6 @@ export default {
                     }
                     // that.removeEntry(action, that.entryInfo);
                 }
-
             })
         },
         removeEntry(action, entry_info) {
@@ -312,23 +318,27 @@ export default {
         },
         // 更换日志
         changeLogs(data) {
-            let _entryLogs = this.$refs._entryLog,
-                _singleEntryInfo = this.entryInfo;
-            for (let i = 0, len = _entryLogs.length; i < len; i++) {
-                console.log(_entryLogs[i].$el, 'entry-log---ul')
-                if ($(_entryLogs[i].$el).attr("id") == data.permit) {
-                    _entryLogs[i].getLogs(data)
-                }
-            }
-            if (data.type == 'screenshot') {
-                for (let i = 0, len = _singleEntryInfo.length; i < len; i++) {
-                    console.log(_singleEntryInfo[i], '_singleEntryInfo---ul')
-                    if (_singleEntryInfo[i].permit == data.permit) {
-                        _singleEntryInfo[i].machine_photo_count = data.machine_photo_count;
-                        _singleEntryInfo[i].error_screen_photo_count = data.error_screen_photo_count;
-                    }
-                }
-            }
+            console.log(data, 'data')
+            // 
+            // let _entryLogs = this.$refs._entryLog,
+            //     _singleEntryInfo = this.entryInfo;
+            //     console.log(this.$refs, '_entryLogs')
+            // for (let i = 0, len = _entryLogs.length; i < len; i++) {
+            //     console.log(_entryLogs[i].$el, 'entry-log---ul')
+            //     if ($(_entryLogs[i].$el).attr("id") == data.permit) {
+            //         _entryLogs[i].getLogs(data)
+            //     }
+            // }
+            // if (data.type == 'screenshot') {
+            //     for (let i = 0, len = _singleEntryInfo.length; i < len; i++) {
+            //         console.log(_singleEntryInfo[i], '_singleEntryInfo---ul')
+            //         if (_singleEntryInfo[i].permit == data.permit) {
+            //             _singleEntryInfo[i].machine_photo_count = data.machine_photo_count;
+            //             _singleEntryInfo[i].error_screen_photo_count = data.error_screen_photo_count;
+            //         }
+            //     }
+            // }
+            // 数组存到vuex中[1,2,3,4,5] 存进去拿出来 向前向后删除，判断permit 替换其中的entry_log
         },
         autoRefresh() {
             this.autoToggleSingle();
@@ -407,7 +417,7 @@ export default {
         },
         connect(res, action, i, refs) {
             let that = this, peer = new Peer();
-            peers[peer._id] = peer;
+            that.peers[peer._id] = peer;
 
             if (action == 'all') {
                 i = i;
@@ -421,7 +431,7 @@ export default {
                     type: "signal",
                     to: res.socket_id,
                     from_peer: peer._id,
-                    to_peer: to_peers[peer._id],
+                    to_peer: that.to_peers[peer._id],
                     msg: data
                 }
                 that.$socket.emit("message", pkt);

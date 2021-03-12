@@ -4,7 +4,9 @@ const global = {
         roomId: '',
         teacherId: '',
         role: '',
-        socket: {}
+        socket: {},
+        set_entry_log: [],
+        set_eagle_log: []
     },
     mutations: {
         SET_TOKEN: (state, token) => {
@@ -21,6 +23,12 @@ const global = {
         },
         SET_SOCKET: (state, socket)=> {
             state.socket = socket;
+        },
+        SET_ENTRY_LOG: (state, set_entry_log)=> {
+            state.set_entry_log = set_entry_log;
+        },
+        SET_EAGLE_LOG: (state, set_eagle_log)=> {
+            state.set_eagle_log = set_eagle_log;
         }
     },
     actions: {
@@ -38,6 +46,12 @@ const global = {
         },
         socket({ commit }, socket) {
             commit('SET_SOCKET', socket)
+        },
+        setEntryLog({ commit }, set_entry_log) {
+            commit('SET_ENTRY_LOG', set_entry_log)
+        },
+        setEagleLog({ commit }, set_eagle_log) {
+            commit('SET_EAGLE_LOG', set_eagle_log)
         }
     }
 }
