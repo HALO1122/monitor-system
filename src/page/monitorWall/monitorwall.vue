@@ -64,7 +64,6 @@
             @_timerPause="timerPause = true"></send-message>
         <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
             @_timerPause="timerPause = true"></screenshot>
-            <!--  @changeLogs="changeLogs" -->
         <!-- <search-entry :search_entry_data="search_entry_data"></search-entry> -->
     </div>
 </template>
@@ -315,30 +314,6 @@ export default {
                     screenshotModal.getVideo(_entryVideos[i])
                 }
             }
-        },
-        // 更换日志
-        changeLogs(data) {
-            console.log(data, 'data')
-            // 
-            // let _entryLogs = this.$refs._entryLog,
-            //     _singleEntryInfo = this.entryInfo;
-            //     console.log(this.$refs, '_entryLogs')
-            // for (let i = 0, len = _entryLogs.length; i < len; i++) {
-            //     console.log(_entryLogs[i].$el, 'entry-log---ul')
-            //     if ($(_entryLogs[i].$el).attr("id") == data.permit) {
-            //         _entryLogs[i].getLogs(data)
-            //     }
-            // }
-            // if (data.type == 'screenshot') {
-            //     for (let i = 0, len = _singleEntryInfo.length; i < len; i++) {
-            //         console.log(_singleEntryInfo[i], '_singleEntryInfo---ul')
-            //         if (_singleEntryInfo[i].permit == data.permit) {
-            //             _singleEntryInfo[i].machine_photo_count = data.machine_photo_count;
-            //             _singleEntryInfo[i].error_screen_photo_count = data.error_screen_photo_count;
-            //         }
-            //     }
-            // }
-            // 数组存到vuex中[1,2,3,4,5] 存进去拿出来 向前向后删除，判断permit 替换其中的entry_log
         },
         autoRefresh() {
             this.autoToggleSingle();

@@ -1,11 +1,11 @@
 <template>
     <div :id="logs.permit">
-        <p class="tag-monitor-status"><i class="ez-icon-font">&#xe95c;</i> 运行中</p>
+        <p class="tag-monitor-status"><i class="ez-icon-font">&#xe95c;</i> {{eagleTip}}</p>
         <div class="eagle-show">
-            <img src="" class="eagle-photo" width="100%">
-            <video class="eagle-video" ref="eagle_vidoe" muted autoplay playsinline></video>
+            <img :src="logs.eagle_photo_url" v-show="!isEagleVideo" width="100%">
+            <video class="eagle-video" ref="eagle_vidoe" v-show="isEagleVideo" muted autoplay playsinline></video>
         </div>
-        <ul class="eagle-entry-log pt10 pb10">
+        <ul class="eagle-entry-log">
             <vue-scroll :ops="ops">
                 <li v-for="(subitem,index) in logs.entry_log" :key="index">
                     <div v-if="subitem.login"><p class="login">登录考试</p><p>{{subitem.login}}</p></div>
@@ -26,11 +26,15 @@
 </template>
 
 <script>
+import Bus from '@/utils/bus.js'; 
+const Peer = require('simple-peer');
 export default {
     name: "eagle-log",
     data() {
         return{
+            isEagleVideo: false,
             eagleStatus: "",
+            eagleTip: this.$t('monitor.connecting'),
             ops: {
                 vuescroll: {},
                 scrollPanel: {},
@@ -63,6 +67,97 @@ export default {
             type: Object,
             dafault: {}
         },
+        eagle_video_idx: {
+            type: Number,
+            dafault: 0
+        },
+        action: {
+            type: String,
+            dafault: ''
+        },
+        peers: {
+            type: Object,
+            dafault: {}
+        },
+        to_peers: {
+            type: Object,
+            dafault: {}            
+        }
+    },
+    mounted() {
+        let eagleSocketId = this.logs.eagle_socket_id;
+        if (eagleSocketId != null && eagleSocketId != '') {
+            this.connect(eagleSocketId, this.action, this.eagle_video_idx, this.$refs)
+        }
+        this.changeLog();
+    },
+    methods: {
+        changeLog() {
+            Bus.$on('changeLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }
+            });
+            Bus.$on('screenshotLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }
+            });
+        },
+        connect(eagleSocketId, action, i, refs) {
+            let that = this, peer = new Peer();
+            that.peers[peer._id] = peer;
+
+            if (action == 'all') {
+                i = i;
+            } else if(action == 'next') {
+                i = refs.curLi.length - 1;
+            } else if(action == 'prev') {
+                i = 0;
+            }
+            console.log(that.$socket, 'that.$socket')
+            peer.on('signal', function (data) {
+                var pkt = {
+                    type: "signal",
+                    to: eagleSocketId,
+                    from_peer: peer._id,
+                    to_peer: that.to_peers[peer._id],
+                    msg: data
+                }
+                console.log(pkt, 'eagle---pkt')
+                that.$socket.emit("message", pkt);
+            });
+
+            peer.on('connect', function() {
+                console.log('peer------------------eagle_connect');
+            });
+
+            peer.on('stream', function(stream) {
+                that.isEagleVideo = true;
+                that.eagleTip = that.$t('monitor.running');
+                refs.eagle_vidoe.srcObject = stream;
+                console.log(stream,'stream available: ');
+            });
+            peer.on('data', function(data) {
+                console.log('data available');
+            });
+            peer.on('close', function() {
+                that.isEagleVideo = false;
+                that.eagleTip = that.$t('monitor.disconnect');
+                console.log('peer------------------closed');
+            });
+            peer.on('error', function(error) {
+                console.log('error: ',error);
+            });
+            // make the call
+            var pkt = {
+                type: "call",
+                to: eagleSocketId,
+                from_peer: peer._id
+            }
+            console.log(pkt, 'pkt')
+            that.$socket.emit("message", pkt)
+        }
     }
 }
 </script>

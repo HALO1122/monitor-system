@@ -8,20 +8,22 @@
     padding: 3px 5px;
     background-color: #999;
     position: absolute;
-    bottom: 9px;
+    bottom: 14px;
     right: 166px;
 }
 .tag-monitor-status {
     position: absolute;
+    top: 12px;
     left: 12px;
+    z-index: 99;
     color: #FF5252;
 }
 .eagle-show{
     position: relative;
     width: 248px;
-    margin: 10px 0px 0px 6px;
+    margin: 6px 0px 0px 6px;
     float: left;
-
+    video{ width: 100%; }
 }
 
 .eagle-entry-log{

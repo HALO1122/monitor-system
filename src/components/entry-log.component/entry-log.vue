@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import Bus from '@/utils/bus.js'; 
 export default {
     name: "entry-log",
     data() {
@@ -84,16 +85,22 @@ export default {
             dafault: {}
         },
     },
-    watch:{
-        partInfo(){
-            console.log({PART:this.partInfo})
-            this.infos = this.partInfo;
-        }
+    mounted(){
+        this.changeLog()
     },
     methods: {
-        getLogs(data) {
-            console.log(data, '----msg  data')
-            this.logs.entry_log = data.logs;
+        changeLog() {
+            Bus.$on('changeLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }
+            });
+            Bus.$on('screenshotLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }                 
+            });
+            
         }
     }
 }

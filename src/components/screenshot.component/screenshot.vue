@@ -24,7 +24,8 @@
 </template>
 
 <script>
-import { screenshotEntry } from '@/utils/api.js'
+import { screenshotEntry } from '@/utils/api.js';
+import Bus from '@/utils/bus.js';
 export default {
     data () {
         return{
@@ -93,8 +94,8 @@ export default {
             if (cutData.mismatch_type != "" && cutData.permit != "") {
                 screenshotEntry({ data: cutData }).then((res)=> {
                     if(res.code == 200) {
-                        this.$emit('changeLogs', {"permit": this.screenshotData.permit, "logs": res.data.entry_log, "type": "screenshot",
-                            "error_screen_photo_count": res.data.error_screen_photo_count, "machine_photo_count": res.data.machine_photo_count})
+                        Bus.$emit('screenshotLogs', {"permit": this.screenshotData.permit, "logs": res.data.entry_log, "type": "screenshot",
+                            "error_screen_photo_count": res.data.error_screen_photo_count, "machine_photo_count": res.data.machine_photo_count});
                         this.closeCutModal()
                     }
                 }).catch((xhr) => {console.log(xhr)})

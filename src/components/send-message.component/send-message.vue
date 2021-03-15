@@ -24,6 +24,7 @@
 </template>
 <script>
 import { sendEntryMsg } from '@/utils/api.js'
+import Bus from '@/utils/bus.js'; 
 export default {
     data() {
         return {
@@ -71,7 +72,7 @@ export default {
                 this.customize = false;
             }
         },
-        	// 监控中向考生发送消息
+        // 监控中向考生发送消息
         submit_sendmsg() {
             let pkt = {
                 type: "notice",
@@ -95,7 +96,7 @@ export default {
             // 将发送的数据存放接口日志里
             sendEntryMsg({ data: msgData }).then((res)=> {
                 if(res.code == 200) {
-                    this.$emit('changeLogs', { "permit": this.sendMsgData.permit, "logs": res.entry_log })
+                    Bus.$emit('changeLogs', { "permit": this.sendMsgData.permit, "logs": res.entry_log });
                     this.closeMsgModal()
                 }
             }).catch((xhr) => {console.log(xhr)})
