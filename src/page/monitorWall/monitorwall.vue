@@ -17,23 +17,23 @@
         <!-- 展示内容---有考生 -->
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
-                <li class="room-video-li" v-for="(item, index) in entryInfo" :key="index" ref="curLi" :permit="item.permit">
+                <li class="room-video-li" v-for="item in entryInfo" :key="item.permit" ref="curLi" :permit="item.permit">
                     <span class="video-loading-wrap"></span>
                     <div class="video-entry-content">
                         <p class="video-tag-tip">
-                            <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">运行中</span>
-                            <i v-show="item.pinup" class="ez-icon-font txt-24px icon-dingzhu">&#xe80d;</i>
-                            <i v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80e;</i>
+                            <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">{{item.videoStatus}}</span>
+                            <i v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80d;</i>
+                            <i v-show="item.pinup" class="ez-icon-font txt-24px icon-dingzhu">&#xe80e;</i>
                         </p>
                         <p class="tag-abnormal" v-show="item.monitor_photo_count">{{ $t('monitor.abnormal') }}</p>
                         <img class="entry-picture mb5" v-show="!item.isVideo" ref="entry_img" :src="item.photo_url">
-                        <video :id="item.permit" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
+                        <video :id="item.permit" class="entry-video" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
                     </div>
                     <!-- icon 事件 -->
                     <p class="icon-event-content">
                         <i class="ez-icon-font txt-18px" @click="pingVideo(item)">&#xe804;</i>
                         <i v-if="item.audio_monitor" @click="controlSound(item, $event)" class="ez-icon-font txt-18px" v-html="sound"></i>
-                        <i v-if="openVideo" @click="openVideo(item)" class="ez-icon-font txt-18px">&#xe66c;</i>
+                        <i v-if="openVideo" @click="openCallVideo(item, $event)" class="ez-icon-font txt-18px">&#xe66c;</i>
                         <i class="ez-icon-font txt-18px" @click="sendMessage(item)">&#xe63b;</i>
                         <i class="ez-icon-font txt-18px" @click="screenshotCut(item)">&#xe807;</i>
                     </p>
@@ -44,7 +44,7 @@
                     <div class="eagle-event-block" v-if="item.eagle_eye">
                         <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
                         <eagle-log :eagleLog="item" ref="_eagleLog" :eagle_video_idx="eagle_video_idx" :action="action"
-                            :peers="peers" :to_peers="to_peers"></eagle-log>
+                            :peers="peers" :to_peers="to_peers" :timerPause="timerPause" @_timerPause="timerPause = false"></eagle-log>
                     </div>
                     <div class="entry-information">
                         <p><span>{{item.permit}} | {{item.full_name}}</span>
@@ -64,6 +64,7 @@
             @_timerPause="timerPause = true"></send-message>
         <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
             @_timerPause="timerPause = true"></screenshot>
+        <sendVideo :callVideoData="callVideoData" :timerPause="timerPause" @_timerPause="timerPause = true"></sendVideo>
         <!-- <search-entry :search_entry_data="search_entry_data"></search-entry> -->
     </div>
 </template>
@@ -77,6 +78,7 @@ import eagleLog from '@/components/eagle-log.component/eagle-log'
 import sendMessage from '@/components/send-message.component/send-message'
 import screenshot from '@/components/screenshot.component/screenshot'
 import searchEntry from '@/components/search-entry.component/search-entry'
+import sendVideo from '@/components/send-video.component/send-video'
 const Peer = require('simple-peer');
 export default {
     data() {
@@ -101,6 +103,7 @@ export default {
             sound: '&#xe806;',
             sendMsgData: {},
             screenshotData: {},
+            callVideoData: {},
             searchData: "",
             monitorError: false,
             monitorErrorTip: "这是错误提示",
@@ -110,7 +113,7 @@ export default {
         }
     },
     components: {
-        entryLog, eagleLog, navHeader, sendMessage, screenshot, searchEntry
+        entryLog, eagleLog, navHeader, sendMessage, screenshot, searchEntry, sendVideo
     },
     created() {
         this.role = this.$route.query.role;
@@ -129,7 +132,7 @@ export default {
     },
     sockets: {
         message(data) {
-            console.log(data, 'this.sockets**************message')
+            // console.log(data, 'this.sockets**************message')
             switch (data.type) {
                 case "signal_called":
                     var peer = this.peers[data.to_peer];
@@ -209,7 +212,7 @@ export default {
                     that.timerNum--;
                     if (that.timerNum == 0) { 
                         that.timerNum = 10;
-                        // that.autoRefresh();                                    
+                        // that.autoRefresh();                    
                         clearInterval(that.timeClock)
                     }
                 } else {
@@ -217,11 +220,11 @@ export default {
                 }
             }, 1000)
         },
-        initStudentVideo(entry_list, action){
+        async initStudentVideo(entry_list, action){
             console.log(entry_list, 'entry_list--------')
             if(action == 'all') {
                 for (let i = 0, len = entry_list.length; i < len; i++ ) {
-                    this.initSingleVideo(entry_list[i], action, i);
+                    await this.initSingleVideo(entry_list[i], action, i);
                 }
             } else {
                 this.initSingleVideo(entry_list[0], action, 0);
@@ -242,6 +245,8 @@ export default {
                     res.data.openSound = false;
                     res.data.openMessageModal = false;
                     res.data.openScreenshotModal = false;
+                    res.data.openVideoCallModal = false;
+                    res.data.videoStatus = this.$t('monitor.connecting');
                     if (action != 'prev') {
                         that.entryInfo.push(res.data);
                     } else{
@@ -251,72 +256,10 @@ export default {
                 }
             })
         },
-        removeEntry(action, entry_info) {
-            let pinupList = [], removeList = [];
-            entry_info.filter(item => { !item.pinup ? removeList.push(item) : pinupList.push(item); });
-
-            console.log(entry_info, 'entry_info')
-            if (action == 'next') {
-                // 合并[钉住的考生] 和 [删除没有钉住的考生第一个]
-                removeList.splice(0,1);
-                this.entryInfo = pinupList.concat(removeList);
-                // destroyPeer(item);
-                // 获取remove掉的item.permit 根据permit找到对应li，销毁上面的peer_id
-            } else if (action == 'prev') {
-                removeList.pop();
-                this.entryInfo = pinupList.concat(removeList)
-            }
-            console.log(entry_info, 'entry_info');
-            console.log(removeList, 'removeList');
-        },
-        // 钉住考生
-        pingVideo(item) {
-            if (item.pinup) {
-                item.pinup = false;
-                // 从数组中取消钉住的考生
-                this.fixed_list.splice(this.fixed_list.indexOf(item.permit), 1);
-            } else {
-                item.pinup = true;
-                // 将钉住的考生存放数组中并去重
-                this.entryInfo.filter((item, index) => { if(item.pinup) this.fixed_list.push(item.permit) });
-                this.fixed_list = this.fixed_list.filter(function(item, index, array) { return array.indexOf(item) === index; });
-            }
-            console.log(this.fixed_list, 'this.fixed_list')
-        },
-        // 控制考生声音
-        controlSound(item, e) {
-            let video = $(e.target).parents("li").find("#entry_video")[0];
-            item.openSound = !item.openSound;
-            console.log(video, 'video')
-            if (item.openSound) {
-                video.muted = false;
-                this.sound = '&#xe805;';
-            } else {
-                video.muted = true;
-                this.sound = '&#xe806;';
-            }
-        },
-        // 监考发送消息
-        sendMessage(item) {
-            item.openMessageModal = true;
-            this.sendMsgData = item;
-            this.timerPause = false;
-        },
-        // 监考截屏
-        screenshotCut(item) {
-            item.openScreenshotModal = true;
-            this.screenshotData = item;
-            this.timerPause = false;
-            let _entryVideos = this.$refs.entry_video,
-                screenshotModal = this.$refs.screenshot;
-            for (let i = 0, len = _entryVideos.length; i < len; i++) {
-                if ($(_entryVideos[i]).attr("id") == item.permit) {
-                    screenshotModal.getVideo(_entryVideos[i])
-                }
-            }
-        },
         autoRefresh() {
-            this.autoToggleSingle();
+            if(this.entryInfo.length > 5) {
+                this.autoToggleSingle();
+            }
         },
         getPrevSingle() {
             // 获取列表中第一个没有被钉住的考生的permit
@@ -362,8 +305,86 @@ export default {
 
             if (that.entry_list.length != 0) that.initStudentVideo(that.entry_list, 'next');
         },
+        removeEntry(action, entry_info) {
+            let pinupList = [], removeList = [];
+            entry_info.filter(item => { !item.pinup ? removeList.push(item) : pinupList.push(item); });
+
+            console.log(entry_info, 'entry_info')
+            if (action == 'next') {
+                // 合并[钉住的考生] 和 [删除没有钉住的考生第一个]
+                removeList.splice(0,1);
+                this.entryInfo = pinupList.concat(removeList);
+                // destroyPeer(item);
+                // 获取remove掉的item.permit 根据permit找到对应li，销毁上面的peer_id
+            } else if (action == 'prev') {
+                removeList.pop();
+                this.entryInfo = pinupList.concat(removeList)
+            }
+            console.log(entry_info, 'entry_info');
+            console.log(removeList, 'removeList');
+        },
+        // 切换log
         togglesEventBlock(item, toggles) {
             toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
+        },
+        // 钉住考生
+        pingVideo(item) {
+            if (item.pinup) {
+                item.pinup = false;
+                // 从数组中取消钉住的考生
+                this.fixed_list.splice(this.fixed_list.indexOf(item.permit), 1);
+            } else {
+                item.pinup = true;
+                // 将钉住的考生存放数组中并去重
+                this.entryInfo.filter((item, index) => { if(item.pinup) this.fixed_list.push(item.permit) });
+                this.fixed_list = this.fixed_list.filter(function(item, index, array) { return array.indexOf(item) === index; });
+            }
+            console.log(this.fixed_list, 'this.fixed_list')
+        },
+        // 控制考生声音
+        controlSound(item, e) {
+            let video = $(e.target).parents("li").find(".entry-video")[0];
+            item.openSound = !item.openSound;
+            if (item.openSound) {
+                video.muted = false;
+                this.sound = '&#xe805;';
+            } else {
+                video.muted = true;
+                this.sound = '&#xe806;';
+            }
+        },
+        // 监考发送消息
+        sendMessage(item) {
+            item.openMessageModal = true;
+            this.sendMsgData = item;
+            this.timerPause = false;
+        },
+        // 监考截屏
+        screenshotCut(item) {
+            item.openScreenshotModal = true;
+            this.screenshotData = item;
+            this.timerPause = false;
+            let _entryVideos = this.$refs.entry_video,
+                screenshotModal = this.$refs.screenshot;
+            for (let i = 0, len = _entryVideos.length; i < len; i++) {
+                if ($(_entryVideos[i]).attr("id") == item.permit) {
+                    screenshotModal.getVideo(_entryVideos[i])
+                }
+            }
+        },
+        // 视频通话
+        openCallVideo(item, e) {
+            let curLi = $(e.target).parents("li"), video, eagleVideo;
+            video = curLi.find(".entry-video")[0];
+            eagleVideo = curLi.find(".eagle-video")[0];
+
+            item.studentStream = video.srcObject;
+            if (eagleVideo != undefined && item.eagle_eye) {
+                item.eagleStream = eagleVideo.srcObject;
+            }
+            item.openVideoCallModal = true;
+            this.timerPause = false;
+            this.callVideoData = item;
         },
         // 获取查询考生数据
         search_entry() {
@@ -419,6 +440,7 @@ export default {
             peer.on('stream', function(stream) {
                 refs.entry_video[i].srcObject = stream;
                 $(refs.curLi[i]).attr("peer_id", peer._id);
+                res.videoStatus = that.$t('monitor.running');
                 res.isVideo = true;
                 console.log(stream,'stream available: ');
             });
@@ -427,6 +449,7 @@ export default {
             });
             peer.on('close', function() {
                 res.isVideo = false;
+                res.videoStatus = that.$t('monitor.disconnect');
                 console.log(res, 'peer------------------closed');
             });
             peer.on('error', function(error) {
@@ -438,7 +461,6 @@ export default {
                 to: res.socket_id,
                 from_peer: peer._id
             }
-            console.log(pkt, 'pkt')
             that.$socket.emit("message", pkt)
         }
     }

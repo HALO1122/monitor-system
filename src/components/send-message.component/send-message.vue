@@ -57,9 +57,7 @@ export default {
         }
     },
     computed: {
-        _time () {
-            return this.timerPause = true;
-        }
+
     },
     methods: {
         radioChange(e) {

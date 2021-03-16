@@ -3,7 +3,7 @@
         <p class="tag-monitor-status"><i class="ez-icon-font">&#xe95c;</i> {{eagleTip}}</p>
         <div class="eagle-show">
             <img :src="logs.eagle_photo_url" v-show="!isEagleVideo" width="100%">
-            <video class="eagle-video" ref="eagle_vidoe" v-show="isEagleVideo" muted autoplay playsinline></video>
+            <video class="eagle-video" ref="eagle_video" v-show="isEagleVideo" muted autoplay playsinline></video>
         </div>
         <ul class="eagle-entry-log">
             <vue-scroll :ops="ops">
@@ -21,12 +21,12 @@
                 </li>
             </vue-scroll>
         </ul>
-        <i class="ez-icon-font eagle-cut txt-18px">&#xe807;</i>
+        <i class="ez-icon-font eagle-cut txt-18px" @click="screenshotEagleCut(logs)">&#xe807;</i>
     </div>
 </template>
 
 <script>
-import Bus from '@/utils/bus.js'; 
+import Bus from '@/utils/bus.js';
 const Peer = require('simple-peer');
 export default {
     name: "eagle-log",
@@ -82,16 +82,27 @@ export default {
         to_peers: {
             type: Object,
             dafault: {}            
-        }
+        },
+        timerPause: {
+            type: Boolean,
+            dafault: false
+        },
     },
     mounted() {
-        let eagleSocketId = this.logs.eagle_socket_id;
-        if (eagleSocketId != null && eagleSocketId != '') {
-            this.connect(eagleSocketId, this.action, this.eagle_video_idx, this.$refs)
-        }
+        // 初始化数据
+        this.init();
+        // 更新日志
         this.changeLog();
     },
     methods: {
+        init() {
+            let eagleSocketId = this.logs.eagle_socket_id;
+            if (eagleSocketId != null && eagleSocketId != '') {
+                this.connect(eagleSocketId, this.action, this.eagle_video_idx, this.$refs)
+            } else {
+                this.eagleTip = this.$t('monitor.notLogin');
+            }
+        },
         changeLog() {
             Bus.$on('changeLogs', target => {
                 if (this.logs.permit == target.permit) {
@@ -101,8 +112,21 @@ export default {
             Bus.$on('screenshotLogs', target => {
                 if (this.logs.permit == target.permit) {
                     this.logs.entry_log = target.logs;
+                    this.logs.error_screen_photo_count = target.error_screen_photo_count;
+                    this.logs.machine_photo_count = target.machine_photo_count;
                 }
             });
+            Bus.$on('callVideoLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }
+            });
+        },
+        // 鹰眼截屏
+        screenshotEagleCut(item) {
+            item.openScreenshotModal = true;
+            let _eagleVideo = this.$refs.eagle_video;
+            Bus.$emit('controlScreenshot', { "item": item, "video": _eagleVideo});
         },
         connect(eagleSocketId, action, i, refs) {
             let that = this, peer = new Peer();
@@ -124,7 +148,6 @@ export default {
                     to_peer: that.to_peers[peer._id],
                     msg: data
                 }
-                console.log(pkt, 'eagle---pkt')
                 that.$socket.emit("message", pkt);
             });
 
@@ -135,7 +158,7 @@ export default {
             peer.on('stream', function(stream) {
                 that.isEagleVideo = true;
                 that.eagleTip = that.$t('monitor.running');
-                refs.eagle_vidoe.srcObject = stream;
+                refs.eagle_video.srcObject = stream;
                 console.log(stream,'stream available: ');
             });
             peer.on('data', function(data) {

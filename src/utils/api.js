@@ -76,3 +76,13 @@ export function searchSingleEntry (config) {
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }
+
+// 视频通话
+export function callVideo (config) {
+    console.log(config, 'config')
+    let Obj = {
+        url: '/monitor/session/3660/room/'+`${store.state.global.roomId}`+'/teacher_call/',
+        method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}

@@ -53,6 +53,7 @@
         "type": "类型：",
 		"content": "内容：",
         "remark": "备注：",
+        "notLogin": "未登录",
         "running": "运行中",
         "connecting": "连接中",
         "disconnect": "已断开",
@@ -85,6 +86,11 @@
         "submit": "提交",
         "search": {
             "_place": "请输入准考证号或姓名"
-        }
+        },
+        "name": "考生姓名",
+        "permit": "准考证号",
+        "_proctor": "监考",
+        "_entry": "考生",
+        "_eagleVideo": "第二监控视角"
     }
 }

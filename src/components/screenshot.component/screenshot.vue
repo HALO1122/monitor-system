@@ -1,5 +1,5 @@
 <template>
-    <div class="room-shadow" v-if="screenshotData.openScreenshotModal">
+    <div class="room-shadow" v-if="item.openScreenshotModal">
         <div class="room-cut" >
             <p class="title">
                 <span>{{$t('monitor.register')}}</span>
@@ -7,8 +7,8 @@
             </p>
             <ul class="mt10">
                 <li class="room-abnormal-pic">
-                    <canvas class="mt10 mb20" id="Canvas" ref="Canvas" width="320" height="240"></canvas>
-                    <p> {{screenshotData.full_name}} | {{screenshotData.permit}} </p>
+                    <canvas class="mt10 mb20" ref="Canvas" width="320" height="240"></canvas>
+                    <p> {{item.full_name}} | {{item.permit}} </p>
                 </li>
                 <li class="pl30 txt-left">
                     <p class="txt-18px pb10">{{$t('monitor.screenCut.reson')}}</p>
@@ -42,7 +42,6 @@ export default {
             canvas: '',
             cutContent: '',
             remark: ''
-
         }
     },
     props: {
@@ -60,41 +59,56 @@ export default {
         }
     },
     computed: {
-        _time () {
-            return this.timerPause = true;
+        item: {
+            get() {
+                return this.screenshotData
+            },
+            set(data){
+                this.screenshotData  = data;
+            }
         }
     },
-    created() {
-        
+    mounted() {
+        this.$nextTick(function () {
+            this.openModal()
+        })
     },
     methods:{
+        openModal() {
+            let that = this;
+            Bus.$on('controlScreenshot', target => {
+                that.item = target.item
+                setTimeout(() => {
+                    that.initCanvas(target.video)
+                }, 0)
+            });
+        },
         initCanvas(data) {
             this.canvas = this.$refs.Canvas;
             let ctx = this.canvas.getContext("2d");
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			ctx.drawImage(data, 0, 0, this.canvas.width, this.canvas.height);
+            ctx.drawImage(data, 0, 0, this.canvas.width, this.canvas.height);
         },
         getVideo(data) {
             console.log(data, 'data--screenlog')
             setTimeout(() => {
                 this.initCanvas(data)
             }, 0)
-
         },
         radioChange(e) {
             this.cutContent = e.target.value;
         },
         screenshotVideo() {
             let cutData ={
-                "image_base64_str":  this.canvas.toDataURL('image/jpeg', 0.6),
+                "image_base64_str": this.canvas.toDataURL('image/jpeg', 0.6),
                 "mismatch_type": this.cutContent,
-                "permit": this.screenshotData.permit,
+                "permit": this.item.permit,
                 "remark": this.remark
             }
             if (cutData.mismatch_type != "" && cutData.permit != "") {
                 screenshotEntry({ data: cutData }).then((res)=> {
                     if(res.code == 200) {
-                        Bus.$emit('screenshotLogs', {"permit": this.screenshotData.permit, "logs": res.data.entry_log, "type": "screenshot",
+                        Bus.$emit('screenshotLogs', {"permit": this.item.permit, "logs": res.data.entry_log,
                             "error_screen_photo_count": res.data.error_screen_photo_count, "machine_photo_count": res.data.machine_photo_count});
                         this.closeCutModal()
                     }
@@ -102,7 +116,7 @@ export default {
             }
         },
         closeCutModal() {
-            this.screenshotData.openScreenshotModal = false;
+            this.item.openScreenshotModal = false;
             this.$emit('_timerPause', this.timerPause)
         }
     }

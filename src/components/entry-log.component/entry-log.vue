@@ -98,9 +98,15 @@ export default {
             Bus.$on('screenshotLogs', target => {
                 if (this.logs.permit == target.permit) {
                     this.logs.entry_log = target.logs;
+                    this.logs.error_screen_photo_count = target.error_screen_photo_count;
+                    this.logs.machine_photo_count = target.machine_photo_count;
                 }                 
             });
-            
+            Bus.$on('callVideoLogs', target => {
+                if (this.logs.permit == target.permit) {
+                    this.logs.entry_log = target.logs;
+                }
+            });
         }
     }
 }
