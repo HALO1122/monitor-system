@@ -1,5 +1,5 @@
 <template>
-    <div class="room-shadow" v-if="item.openScreenshotModal">
+    <div class="room-shadow">
         <div class="room-cut" >
             <p class="title">
                 <span>{{$t('monitor.register')}}</span>
@@ -132,6 +132,7 @@ export default {
         left: 0;
         z-index: 9999;
         background-color: rgba(0,0,0,0.6);
+        
          .room-cut{
             width: 820px;
             background-color: #E4E4E4;

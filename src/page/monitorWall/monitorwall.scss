@@ -149,14 +149,16 @@
         padding: 6px 16px;
         border-radius: 6px;
         vertical-align: middle;
+        z-index: 9999;
         i{ font-size: 14px !important; }
     }
     #search_wrap{
         display: flex;
         float: right;
-        width: 12%;
+        width: 18%;
         font-size: 14px;
         input{
+            width: 80%;
             border-top-right-radius: 0px;
             border-bottom-right-radius: 0px;
         }

@@ -1,6 +1,6 @@
 <template>
     <!-- 发消息弹窗 -->
-    <div class="room-shadow" v-if="sendMsgData.openMessageModal">
+    <div class="room-shadow" >
         <div class="sendMsg-modal">
             <p class="title mb20"><span>{{ $t('monitor.notice') }} {{sendMsgData.full_name}}</span>
                 <i class="ez-icon-font txt-18px" @click="closeMsgModal()">&#xe7bf;</i></p>
@@ -41,6 +41,9 @@ export default {
                 {"msg": this.$t('monitor.msg.tip8')}
             ]
         }
+    },
+    mounted() {
+        console.log(this.sendMsgData.openMessageModal);
     },
     props: {
         sendMsgData: {
