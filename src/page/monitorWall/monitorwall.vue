@@ -60,12 +60,13 @@
                 </li>
             </ul>
         </div>
-        <send-message :sendMsgData="sendMsgData" :timerPause="timerPause" :eagle_eye="room_info.eagle_eye"
-            @_timerPause="timerPause = true"></send-message>
-        <screenshot :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
+        <send-message v-if="sendMsgData.openMessageModal" :sendMsgData="sendMsgData" :timerPause="timerPause" :eagle_eye="room_info.eagle_eye"
+            @_timerPause="timerPause = true" ></send-message>
+        <screenshot v-show="screenshotData.openScreenshotModal" :screenshotData="screenshotData" :timerPause="timerPause" ref="screenshot"
             @_timerPause="timerPause = true"></screenshot>
         <sendVideo :callVideoData="callVideoData" :timerPause="timerPause" @_timerPause="timerPause = true"></sendVideo>
-        <!-- <search-entry :search_entry_data="search_entry_data"></search-entry> -->
+            <!--  @changeLogs="changeLogs" -->
+        <search-entry v-if="searching" @searchModelClose="(data) => {this.searching = data}" :search_entry_data="search_entry_data" :room_info="room_info" @touchmove.prevent></search-entry>
     </div>
 </template>
 
@@ -96,6 +97,7 @@ export default {
             entryInfo: [],
             entryIndex: 0,     // 某个考生在考生列表的索引值
             whole_list: [],    // 所有考生列表
+            whole_info_list: [],    // 所有考生姓名列表
             entry_list: [],    // 考生数组,
             fixed_list: [],     // 存放钉住考生
             doubleVideo: false,
@@ -105,6 +107,7 @@ export default {
             screenshotData: {},
             callVideoData: {},
             searchData: "",
+            searching: false,
             monitorError: false,
             monitorErrorTip: "这是错误提示",
             search_entry_data: [],
@@ -123,9 +126,11 @@ export default {
         } else {
             this.openVideo = true; this.endExam = true;
         }
+        
     },
     mounted() {
         this.initMonitorRoom('init');
+        
     },
     computed: {
         ...mapState({ global: state=>state.global })
@@ -178,14 +183,17 @@ export default {
     methods: {
         initMonitorRoom(action) {
             getMonitorRoom().then(res => {
+                console.log(res,'-------res-------');
                 let that = this;
-                that.room_info = res;
+                that.room_info = res;   
                 that.room_info.eagle_eye ? this.doubleVideo = true : this.doubleVideo = false;
                 if (res.entries_online.length != 0) {
                     that.permitIsEmpty = false;
                     that.whole_list = res.entries_online;
+                    that.getInfoList(that.whole_list);
                     if(action == 'init') { // 初始渲染5个考生
                         that.entry_list = that.whole_list.slice(this.entryIndex, 5);
+                        console.log(that.entry_list);
                         that.saveSocketId();
                         that.initStudentVideo(that.entry_list, 'all');
                         that.countDown();
@@ -197,6 +205,23 @@ export default {
             }).catch(error => {
                 console.log(error);
             }); 
+        },
+        // 获取所有考生姓名及准考证
+        getInfoList(permitList) {
+            permitList.forEach(permit => {
+                let msg = {"permit": permit},
+                info = {
+                    name: '',
+                    permit: ''
+                }
+                getSingleEntry({ data: msg }).then(res => {
+                    info.name = res.data.full_name;
+                    info.permit = permit;
+                    this.whole_info_list.push(info);
+                })
+            })
+            console.log(this.whole_info_list,'--------------name and permit-----------------');
+
         },
         // 保存监考老师socketId
         saveSocketId() {
@@ -253,6 +278,7 @@ export default {
                         that.entryInfo.unshift(res.data);
                     }
                     // that.removeEntry(action, that.entryInfo);
+                    console.log(that.entryInfo,'-----entryInfo------');
                 }
             })
         },
@@ -390,19 +416,45 @@ export default {
         search_entry() {
             console.log(this.searchData, 'searchData')
             if (this.searchData != "") {
-                searchSingleEntry({ data: this.searchData }).then(res => {
-                    console.log(res, 'search--res')
-                    if (res.code == 200) {
-                        this.search_entry_data = res.data;
-                        this.search_entry_data.openSound = false;
-                        this.search_entry_data.openMessageModal = false;
-                        this.search_entry_data.openScreenshotModal = false;
-                        console.log(this.search_entry_data, 'this.search_entry_data')
-                    } else {
-                        this.monitorError = true,
-                        this.monitorErrorTip = "查询不到该考生！"
-                    }
-                })
+                console.log(this.whole_info_list)
+                let searchDataFilter = this.whole_info_list.filter(item => 
+                    item.permit == this.searchData || item.name == this.searchData
+                )
+                if (!searchDataFilter[0]) {
+                    this.monitorError = true,
+                    this.monitorErrorTip = "查询不到该考生！"
+                } else {
+                    searchSingleEntry({ data: searchDataFilter[0].permit }).then(res => {
+                        console.log(res, 'search--res')
+                        if (res.code == 200) {
+                            this.search_entry_data = res.data;
+                            if (this.search_entry_data.length > 0) {
+                                this.monitorError = true,
+                                this.monitorErrorTip = "存在重复的姓名,只显示一个考生,请按准考证搜索"
+                            }
+                            this.search_entry_data[0].openSound = false;
+                            this.search_entry_data[0].openMessageModal = false;
+                            this.search_entry_data[0].openScreenshotModal = false;
+                            this.search_entry_data[0].isVideo = true; // 
+                            this.search_entry_data[0].pinup = false;
+                            console.log(this.search_entry_data, 'this.search_entry_data')
+                            this.searching = true;
+                            if (this.entry_list.includes(this.search_entry_data[0].permit)) {
+                                
+                            } else {
+                                
+                            }
+                            
+                        } else {
+                            this.monitorError = true,
+                            this.monitorErrorTip = "查询不到该考生！"
+                        }
+                    })
+                }
+                
+            } else {
+                
+                // this.initStudentVideo(this.entry_list, 'all');
             }
         },
         // 寻找每个页面最后一个考生在列表中的索引
