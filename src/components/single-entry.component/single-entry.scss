@@ -1,0 +1,95 @@
+@mixin flex-between{
+    display: flex;
+    justify-content: space-between;
+}
+
+    .video-entry-content{
+        height: 285px;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        background-color: #3D3C41;
+        width: 100%;
+        img {width: 100%;}
+        video{
+            width: 100%;
+            height: 285px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .video-tag-tip{
+            position: absolute;
+            left: 12px;
+            top: 10px;
+            i{ margin: 0px 6px; }
+            .icon-monitor{ color: #FF5252 !important; }
+            .icon-dingzhu { color: #4D84FF; }
+            .icon-yuyin { color: #00CF71; }
+        }
+        .tag-abnormal{
+            background: #BF1E1E;
+            border-radius: 15px;
+            padding: 2px 8px;
+            font-size: 12px;
+            position: absolute;
+            top: 10px;
+            right: 12px;
+        }
+    }
+    .icon-event-content{
+        background-color: #4C4E52;
+        margin: 0px;
+        padding: 8px 5px;
+        text-align: left;
+        i{ margin: 0px 6px; }
+    }
+    @mixin toggle-video{
+        cursor: pointer;
+        position: absolute;
+        top: 180px;
+        width: 0;
+        height: 0;
+        z-index: 99;
+    }
+    @mixin icon-spot{
+        height: 96px;
+        padding: 0px 30px;
+        background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
+        background-position: 12px 5px;
+    }
+    .entry-event-block{
+        height: 350px;
+        overflow-y: auto;
+        background-color: #3D3C41;
+        position: relative;
+        .double-video{
+            @include toggle-video;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid #fff;
+        }
+
+    }
+    .eagle-event-block{
+        position: relative;
+        background-color: #3D3C41;
+        .single-video{
+            right: 150px;
+            @include toggle-video;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #fff;
+        }
+    }
+    .entry-information{
+        padding: 1px 12px;
+        background-color: #3D3C41;
+        margin-top: 2px;
+        p{
+            @include flex-between;
+            margin: 10px 0px;
+        }
+        .icon-num span{
+            color: #889497;
+            margin: 0px 5px;
+        }
+    }

@@ -1,13 +1,13 @@
 <template>
     <div class="room-shadow">
-        <div class="room-cut" >
+        <div class="room-cut">
             <p class="title">
                 <span>{{$t('monitor.register')}}</span>
-                <span ><i class="ez-icon-font txt-18px" @click="closeCutModal()">&#xe7bf;</i></span>
+                <span><i class="ez-icon-font txt-18px" @click="closeCutModal()">&#xe7bf;</i></span>
             </p>
             <ul class="mt10">
                 <li class="room-abnormal-pic">
-                    <canvas class="mt10 mb20" ref="Canvas" width="320" height="240"></canvas>
+                    <canvas class="mt10 mb20" id="Canvas" ref="Canvas" width="320" height="240"></canvas>
                     <p> {{item.full_name}} | {{item.permit}} </p>
                 </li>
                 <li class="pl30 txt-left">
@@ -49,10 +49,6 @@ export default {
             type: Object,
             dafault: {}
         },
-        timerPause: {
-            type: Boolean,
-            dafault: false
-        },
         eagle_eye: {
             type: Boolean,
             dafault: false
@@ -68,32 +64,34 @@ export default {
             }
         }
     },
-    mounted() {
+    created() {
         this.$nextTick(function () {
-            this.openModal()
+            this.openModal();
         })
     },
     methods:{
         openModal() {
             let that = this;
-            Bus.$on('controlScreenshot', target => {
-                that.item = target.item
-                setTimeout(() => {
-                    that.initCanvas(target.video)
-                }, 0)
+            Bus.$on('controlMainScreenshot', target => {
+                if (that.item.permit == target.permit) {
+                    console.log('controlMainScreenshot')
+                    setTimeout(function() {
+                        this.canvas = $("#Canvas")[0];
+                        // that.initCanvas(target.video)
+                        console.log(this.canvas,'this.canvas')
+                        console.log(target.video,'target.video')
+                        let ctx = this.canvas.getContext("2d");
+                        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                        ctx.drawImage(target.video, 0, 0, this.canvas.width, this.canvas.height);
+                    }, 10)
+                }
             });
         },
         initCanvas(data) {
-            this.canvas = this.$refs.Canvas;
+            this.canvas = $("#Canvas")[0];
             let ctx = this.canvas.getContext("2d");
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             ctx.drawImage(data, 0, 0, this.canvas.width, this.canvas.height);
-        },
-        getVideo(data) {
-            console.log(data, 'data--screenlog')
-            setTimeout(() => {
-                this.initCanvas(data)
-            }, 0)
         },
         radioChange(e) {
             this.cutContent = e.target.value;
@@ -117,7 +115,7 @@ export default {
         },
         closeCutModal() {
             this.item.openScreenshotModal = false;
-            this.$emit('_timerPause', this.timerPause)
+            Bus.$emit('busTimerPause', {"status": true} );
         }
     }
 }
@@ -140,6 +138,7 @@ export default {
             top: 20%;
             left: 26%;
             padding: 24px 30px 12px;
+            color: #000;
             .title{
                 font-size: 20px;
                 display: flex;

@@ -50,10 +50,6 @@ export default {
             type: Object,
             dafault: {}
         },
-        timerPause: {
-            type: Boolean,
-            dafault: false
-        },
         eagle_eye: {
             type: Boolean,
             dafault: false
@@ -105,7 +101,7 @@ export default {
         closeMsgModal() {
             this.customize = false;
             this.sendMsgData.openMessageModal = false;
-            this.$emit('_timerPause', this.timerPause)
+            Bus.$emit('busTimerPause', {"status": true} );
         }
     }
 }
@@ -125,6 +121,7 @@ export default {
                 display: flex;
                 justify-content: space-between;
                 font-size: 20px;
+                color: #000;
             }
             background-color: #ffffff;
             position: absolute;

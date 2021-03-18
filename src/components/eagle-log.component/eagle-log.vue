@@ -35,6 +35,7 @@ export default {
             isEagleVideo: false,
             eagleStatus: "",
             eagleTip: this.$t('monitor.connecting'),
+            destroyPeer: null,
             ops: {
                 vuescroll: {},
                 scrollPanel: {},
@@ -67,14 +68,6 @@ export default {
             type: Object,
             dafault: {}
         },
-        eagle_video_idx: {
-            type: Number,
-            dafault: 0
-        },
-        action: {
-            type: String,
-            dafault: ''
-        },
         peers: {
             type: Object,
             dafault: {}
@@ -82,11 +75,7 @@ export default {
         to_peers: {
             type: Object,
             dafault: {}            
-        },
-        timerPause: {
-            type: Boolean,
-            dafault: false
-        },
+        }
     },
     mounted() {
         // 初始化数据
@@ -94,11 +83,14 @@ export default {
         // 更新日志
         this.changeLog();
     },
+    destroyed() {
+        if (this.destroyPeer != null) this.destroyPeer.destroy(); 
+    },
     methods: {
         init() {
             let eagleSocketId = this.logs.eagle_socket_id;
             if (eagleSocketId != null && eagleSocketId != '') {
-                this.connect(eagleSocketId, this.action, this.eagle_video_idx, this.$refs)
+                this.connect(eagleSocketId, this.$refs)
             } else {
                 this.eagleTip = this.$t('monitor.notLogin');
             }
@@ -126,20 +118,14 @@ export default {
         screenshotEagleCut(item) {
             item.openScreenshotModal = true;
             let _eagleVideo = this.$refs.eagle_video;
-            Bus.$emit('controlScreenshot', { "item": item, "video": _eagleVideo});
+            // Bus.$emit('controlScreenshot', { "item": item, "video": _eagleVideo});
+            Bus.$emit('controlMainScreenshot', { "permit": item.permit, "video": _eagleVideo});
         },
-        connect(eagleSocketId, action, i, refs) {
+        connect(eagleSocketId, refs) {
             let that = this, peer = new Peer();
             that.peers[peer._id] = peer;
+            that.destroyPeer = peer;
 
-            if (action == 'all') {
-                i = i;
-            } else if(action == 'next') {
-                i = refs.curLi.length - 1;
-            } else if(action == 'prev') {
-                i = 0;
-            }
-            console.log(that.$socket, 'that.$socket')
             peer.on('signal', function (data) {
                 var pkt = {
                     type: "signal",
@@ -152,7 +138,7 @@ export default {
             });
 
             peer.on('connect', function() {
-                console.log('peer------------------eagle_connect');
+                console.log('peer------eagle_connect');
             });
 
             peer.on('stream', function(stream) {
@@ -167,7 +153,7 @@ export default {
             peer.on('close', function() {
                 that.isEagleVideo = false;
                 that.eagleTip = that.$t('monitor.disconnect');
-                console.log('peer------------------closed');
+                console.log('peer------eagle_closed');
             });
             peer.on('error', function(error) {
                 console.log('error: ',error);

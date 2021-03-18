@@ -86,3 +86,13 @@ export function callVideo (config) {
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }
+
+// 强制收卷
+export function forcedExam (config) {
+    console.log(config, 'config')
+    let Obj = {
+        url: '/monitor/session/3660/room/'+`${store.state.global.roomId}`+'/entry_force/',
+        method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}

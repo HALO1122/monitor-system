@@ -310,6 +310,38 @@ export default {
                 padding: 0px 30px;
                 background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
                 background-position: 12px 5px;
+        }
+        .icon-event-content{
+            background-color: #4C4E52;
+            margin: 0px;
+            padding: 8px 5px;
+            text-align: left;
+            i{ margin: 0px 6px; }
+        }
+        @mixin toggle-video{
+            cursor: pointer;
+            position: absolute;
+            top: 180px;
+            width: 0;
+            height: 0;
+            z-index: 99;
+        }
+        @mixin icon-spot{
+            height: 96px;
+            padding: 0px 30px;
+            background: url(../../assets/images/icon-spot.png) 0 2px no-repeat;
+            background-position: 12px 5px;
+        }
+        .entry-event-block{
+            height: 335px;
+            overflow-y: auto;
+            background-color: #3D3C41;
+            position: relative;
+            .double-video{
+                @include toggle-video;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-left: 8px solid #fff;
             }
             .entry-event-block{
                 height: 350px;
@@ -350,5 +382,6 @@ export default {
                 }
             }
         }
+    }
     }
 </style>

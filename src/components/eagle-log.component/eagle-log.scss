@@ -20,7 +20,7 @@
 }
 .eagle-show{
     position: relative;
-    width: 248px;
+    width: 210px;
     margin: 6px 0px 0px 6px;
     float: left;
     video{ width: 100%; }
@@ -28,7 +28,7 @@
 
 .eagle-entry-log{
     width: 160px;
-    height: 350px;
+    height: 335px;
     overflow-y: auto;
     li{
         @include icon-spot;

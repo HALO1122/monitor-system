@@ -1,6 +1,6 @@
 <template>
     <!-- 发送视频通话 -->
-    <div class="room-shadow" v-if="callVideoData.openVideoCallModal">
+    <div class="room-shadow">
         <div class="video-call-content">
             <div class="video-call-left">
                 <video class="video-student" ref="videoStudent" autoplay playsinline></video>
@@ -50,10 +50,6 @@ export default {
         callVideoData: {
             type: Object,
             dafault: {}
-        },
-        timerPause: {
-            type: Boolean,
-            dafault: false
         }
     },
     computed: {
@@ -62,11 +58,9 @@ export default {
             return this.callVideoData.openVideoCallModal;
         }
     },
-    watch: {
-        callDataStatus(status) {
-            if (status) {
-                this.getLocalStream();
-            }
+    mounted() {
+        if (this.callDataStatus) {
+            this.getLocalStream();
         }
     },
     sockets: {
@@ -107,7 +101,6 @@ export default {
                     });
                     if (Cpeer !== null && Cpeer != undefined) {
                         peers[Cpeer._id] = Cpeer;
-                        that.peerNow = Cpeer;
                     }
                 break;
             }
@@ -154,21 +147,22 @@ export default {
                 .then(function(stream) {
                     that.localStream = stream;
                     that.studentStream = that.callVideoData.studentStream;
-                    that.eagleStream = that.callVideoData.eagleStream;
                     that.$refs.videoTeacher.srcObject = that.localStream;
                     that.$refs.videoStudent.srcObject = that.studentStream;
-                    that.$refs.videoEagle.srcObject = that.eagleStream;
                     if (that.studentStream) {
-                    let pkt = {
-                        type: "connected",
-                        to: that.callVideoData.socket_id,
-                        from: that.$socket.id
-                    };
+                        let pkt = {
+                            type: "connected",
+                            to: that.callVideoData.socket_id,
+                            from: that.$socket.id
+                        };
                         that.localSocketId = that.$socket.id;
                         that.$socket.emit("message", pkt);
                     }
                     
                     that.startCallVideo(that.localStream, that.studentStream);
+                    if (that.$refs.videoEagle != undefined) {
+                        that.$refs.videoEagle.srcObject = that.callVideoData.eagleStream;
+                    }
                 })
                 .catch(function(error) {});
             }
@@ -186,7 +180,7 @@ export default {
         // 挂断视频通话
         closeCallVideo() {
             this.endMessage();
-            this.$emit('_timerPause', this.timerPause)
+            Bus.$emit('busTimerPause', {"status": true} );
             this.callVideoData.openVideoCallModal = false;
             if (this.localStream) {
                 for (let track of this.localStream.getTracks()) {
@@ -195,7 +189,6 @@ export default {
             }
             // 停止通话视频录制
             this.mediaRecorder.stopRecording();
-            this.peerNow.destroy();
         },
         endMessage() {
             let params = {
