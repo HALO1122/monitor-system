@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Login from '../page/login/login.vue'
 import Role from '../page/role/role.vue'
 import MonitorWall from '../page/monitorWall/monitorwall.vue'
+import EndExam from '../page/endexam/end.vue'
 
 Vue.use(VueRouter)
 
@@ -16,11 +17,16 @@ Vue.use(VueRouter)
     path: '/role',
     name: 'Role',
     component: Role
-  },{
+  },
+  {
     path: '/monitorwall',
     name: 'MonitorWall',
     component: MonitorWall
-    // monitorwall
+  },
+  {
+    path: '/end',
+    name: 'EndExam',
+    component: EndExam
   }
 ]
 

@@ -3,13 +3,13 @@
         <span class="video-loading-wrap"></span>
         <div class="video-entry-content">
             <p class="video-tag-tip">
-                <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">{{item.videoStatus}}</span>
+                <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">{{videoStatus}}</span>
                 <i v-show="item.pinup" class="ez-icon-font txt-24px icon-dingzhu">&#xe80d;</i>
                 <i v-show="item.openSound" class="ez-icon-font txt-24px icon-yuyin">&#xe80e;</i>
             </p>
             <p class="tag-abnormal" v-show="item.monitor_photo_count">{{ $t('monitor.abnormal') }}</p>
-            <img class="entry-picture mb5" v-show="!item.isVideo" ref="entry_img" :src="item.photo_url">
-            <video :id="item.permit" v-show="item.isVideo" ref="entry_video" muted autoplay playsinline></video>
+            <img class="entry-picture mb5" v-show="!isVideo" ref="entry_img" :src="item.photo_url">
+            <video :id="item.permit" v-show="isVideo" ref="entry_video" muted autoplay playsinline></video>
         </div>
         <!-- icon 事件 -->
         <p class="icon-event-content">
@@ -53,19 +53,22 @@ import sendMessage from '@/components/send-message.component/send-message';
 import screenshot from '@/components/screenshot.component/screenshot';
 import sendVideo from '@/components/send-video.component/send-video';
 import Bus from '@/utils/bus.js';
-import { forcedExam } from '@/utils/api.js'
-// 
+import { forcedExam, getSingleEntry } from '@/utils/api.js';
 const Peer = require('simple-peer');
 export default {
     data() {
         return{
             peers: {},
             to_peers: {},
+            isVideo: false,
+            videoStatus: this.$t('monitor.connecting'),
             sound: '&#xe806;',
             sendMsgData: {},
             screenshotData: {},
             callVideoData: {},
-            destroyPeer: null
+            destroyPeer: null,
+            reconnecttimer: null,
+            roomHandsupList: []
         }
     },
     sockets: {
@@ -86,23 +89,16 @@ export default {
                         peer.signal(data.msg);
                     }
                     break;
-                case "call":
-                    // getLocalStream("", function(){
-                    //     const Tpeer = callConnect(data.from, data.from_peer);
-                    //     if ( Tpeer !== null && Tpeer != undefined) {
-                    //         peers[Tpeer._id] = Tpeer;
-                    //     }
-                    // });
-                    break;
                 case "student_info":
                     let time = new Date(),
                         h = (time.getHours() < 10 ? '0'+time.getHours() : time.getHours()) + ':',
                         m = (time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes());
                     data.time = h+m;
-                    // completeHandup(data);
+                    this.roomHandsupList.push(data);
+                    if (this.item.permit == data.permit) this.completeHandup(data);
                     break;
                 case "student_cancel_handup":
-                    // cancelHandup(data);
+                    this.cancelHandup(data);
                     break;
                 case "force_end_exam_sucess":
                     this.forceExamSucess(data);
@@ -117,7 +113,7 @@ export default {
         entryLog, eagleLog, sendMessage, screenshot, sendVideo
     },
     props: {
-        item: {
+        singleItem: {
             type: Object,
             dafault: {}
         },
@@ -142,10 +138,18 @@ export default {
         this.connect(this.item, this.$refs); 
     },
     computed: {
-
+        item: {
+            get() {
+                return this.singleItem
+            },
+            set(data){
+                this.singleItem  = data;
+            }
+        }
     },
     destroyed() {
         this.destroyPeer.destroy();
+        this.clearTimer(this.reconnecttimer);
     },
     methods: {
         // 钉住考生
@@ -170,6 +174,7 @@ export default {
         },
         // 监考发送消息
         sendMessage(item) {
+            console.log(item, 'item')
             item.openMessageModal = true;
             this.sendMsgData = item;
             Bus.$emit('busTimerPause', {"status": false} );
@@ -183,8 +188,7 @@ export default {
             Bus.$emit('busTimerPause', { "status": false} );
         },
         // 视频通话
-        openCallVideo(item, e) {
-            console.log(this.$refs._eagleLog.$refs.eagle_video, 'this.$refs')
+        openCallVideo(item) {
             let video = this.$refs.entry_video,
                 eagleVideo = this.$refs._eagleLog;
 
@@ -207,10 +211,8 @@ export default {
                 msg: ''
             }
             forcedExam({ data: {"permit": item.permit} }).then((res)=> {
-                if(res.code == 200) {
-                    that.$socket.emit("message", pkt)
-                    this.forceExamSucess({"permit": endExamPermit})
-                }
+                that.$socket.emit("message", pkt)
+                this.forceExamSucess({"permit": endExamPermit})
             }).catch((xhr) => {
                 let data = {"msg": "考生强制收卷失败,请稍后重试！"}
                 this.forceExamFail(data);
@@ -222,6 +224,25 @@ export default {
         forceExamFail(data) {
             console.log(data, 'forceExamFail')
         },
+        completeHandup(data) {
+            let hash = {};
+            this.roomHandsupList = this.roomHandsupList.reduce(function(temp, item) {
+                hash[item.permit] ? '' : hash[item.permit] = true && temp.unshift(item);
+                return temp
+            }, [])
+
+			console.log(this.roomHandsupList, 'roomHandsupList')
+            Bus.$emit('handshupCallvideo', {"data": this.roomHandsupList} );
+        },
+        cancelHandup(data) {
+            this.roomHandsupList.forEach((ele, index) => {
+                if (ele.permit == data.permit){
+                    this.roomHandsupList.splice(index,1);
+                }
+            })
+            console.log(this.roomHandsupList, 'this.roomHandsupList')
+            Bus.$emit('handshupCallvideo', {"data": this.roomHandsupList} );
+        },
         togglesEventBlock(item, toggles) {
             toggles == 'one' ? item.eagle_eye = true : item.eagle_eye = false;
         },
@@ -229,6 +250,12 @@ export default {
             let that = this, peer = new Peer();
             that.peers[peer._id] = peer;
             that.destroyPeer = peer;
+
+            Bus.$on('handsupCall', target => {
+                if (res.permit == target.item.permit) {
+                    this.openCallVideo(target.item)
+                }
+            });
 
             peer.on('signal', function (data) {
                 var pkt = {
@@ -242,26 +269,27 @@ export default {
             });
 
             peer.on('connect', function() {
+                that.clearTimer(that.reconnecttimer);
                 console.log('peer------------------connect');
             });
 
             peer.on('stream', function(stream) {
                 refs.entry_video.srcObject = stream;
-                // $(refs.singleLi).attr("peer_id", peer._id);
-                res.isVideo = true;
-                res.videoStatus = that.$t('monitor.running');
+                that.isVideo = true;
+                that.videoStatus = that.$t('monitor.running');
                 console.log(stream,'stream available: ');
             });
             peer.on('data', function(data) {
                 console.log('data available');
             });
             peer.on('close', function() {
-                res.isVideo = false;
-                res.videoStatus = that.$t('monitor.disconnect');
+                that.isVideo = false;
+                that.videoStatus = that.$t('monitor.disconnect');
                 console.log('peer------------------closed');
             });
             peer.on('error', function(error) {
                 console.log('error: ',error);
+                that.closeReconnect()
             });
             // make the call
             var pkt = {
@@ -270,6 +298,28 @@ export default {
                 from_peer: peer._id
             }
             that.$socket.emit("message", pkt)
+        },
+        // 考生主监控断开之后重连
+        closeReconnect() {
+            let that = this;
+            that.reconnecttimer = setInterval(function() {
+                getSingleEntry({ data: {"permit": that.item.permit} }).then(res => {
+                    if (res.code == 200) {
+                        that.connect(res.data, that.$refs);
+                        // that.singleItem = res.data;
+                        console.log('主监控30s 重连');
+                    }
+                }).catch(() => {
+                    that.clearTimer(that.reconnecttimer);
+                })
+            }, 30000)
+        },
+        // 清除定时器
+        clearTimer(timer){
+            if (timer){
+                clearInterval(timer);
+                timer = null;
+            } 
         }
     }
 }

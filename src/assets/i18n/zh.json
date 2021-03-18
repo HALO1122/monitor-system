@@ -91,6 +91,8 @@
         "permit": "准考证号",
         "_proctor": "监考",
         "_entry": "考生",
-        "_eagleVideo": "第二监控视角"
-    }
+        "_eagleVideo": "第二监控视角",
+        "handsup": "举手"
+    },
+    "endTip": "感谢您完成监考！"
 }

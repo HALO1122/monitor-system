@@ -43,7 +43,8 @@ export default {
             curBlob: null, // 当前录制的blob
             mediaRecorder: null, // 视频录制
             blobsFailed: [],
-            studentStream: null
+            studentStream: null,
+            destroyedCpeer: null
         };
     },
     props: {
@@ -63,6 +64,9 @@ export default {
             this.getLocalStream();
         }
     },
+    destroyed() {
+        this.destroyedCpeer.destroy();
+    },
     sockets: {
         message: function(data) {
             let that = this;
@@ -73,14 +77,14 @@ export default {
                     if (peer !== null && peer != undefined) {
                         peer.signal(data.msg);
                     }
-                break;
+                    break;
                 case "signal":
                     var peer = peers[data.to_peer];
                     to_peers[data.to_peer] = data.from_peer;
                     if (peer !== null && peer != undefined) {
                         peer.signal(data.msg);
                     }
-                break;
+                    break;
                 case "call":
                     let iceServers = this.global.socket.config.iceServers;
                     const Cpeer = new SimplePeer({
@@ -90,19 +94,20 @@ export default {
                     });
                     Cpeer.on("signal", function(peer_data) {
                         var pkt = {
-                        type: "signal_called",
-                        to: that.callVideoData.socket_id,
-                        from: that.localSocketId,
-                        from_peer: Cpeer._id,
-                        to_peer: data.from_peer,
-                        msg: peer_data
+                            type: "signal_called",
+                            to: that.callVideoData.socket_id,
+                            from: that.localSocketId,
+                            from_peer: Cpeer._id,
+                            to_peer: data.from_peer,
+                            msg: peer_data
                         };
                         that.$socket.emit("message", pkt);
                     });
                     if (Cpeer !== null && Cpeer != undefined) {
                         peers[Cpeer._id] = Cpeer;
+                        that.destroyedCpeer = Cpeer;
                     }
-                break;
+                    break;
             }
         }
     },
@@ -229,34 +234,34 @@ export default {
             that.mediaRecorder.startRecording();
         },
         submitBlob(blob, sign) {
-        let data = { name: "", file: blob };
-        data.name = Date.now() + ".webm";
-        this.uploadResource(
-            data,
-            sign,
-            () => {
-            console.log("success submit blob");
-            },
-            () => {
-            // 保存失败，放在本地变量里
-            this.blobsFailed.push(data);
-            this.submitBlobsFailed(0, sign);
-            console.log("blob submit failed");
-            }
-        );
+            let data = { name: "", file: blob };
+            data.name = Date.now() + ".webm";
+            this.uploadResource(
+                data,
+                sign,
+                () => {
+                console.log("success submit blob");
+                },
+                () => {
+                // 保存失败，放在本地变量里
+                this.blobsFailed.push(data);
+                this.submitBlobsFailed(0, sign);
+                console.log("blob submit failed");
+                }
+            );
         },
         submitBlobsFailed(index, sign) {
-        console.log(this.blobsFailed, "blobsFailed");
-        const blob = this.blobsFailed[index];
-        this.uploadResource(
-            blob,
-            sign,
-            () => {
-            // 保存成功，删除当前blob
-            this.deleteBlobSubmitted(blob);
-            },
-            () => {}
-        );
+            console.log(this.blobsFailed, "blobsFailed");
+            const blob = this.blobsFailed[index];
+            this.uploadResource(
+                blob,
+                sign,
+                () => {
+                // 保存成功，删除当前blob
+                this.deleteBlobSubmitted(blob);
+                },
+                () => {}
+            );
         },
         deleteBlobSubmitted(blobSubmitted) {
             for (let i = 0, len = this.blobsFailed.length; i < len; i++) {

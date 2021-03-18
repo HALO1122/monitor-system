@@ -18,7 +18,7 @@
         <div class="room-video-block" v-if="!permitIsEmpty">
             <ul class="room-video-list">
                 <li class="room-video-li" v-for="item in entryInfo" :key="item.permit" ref="curLi" :permit="item.permit">
-                    <entryComponent :item="item" :openVideo="openVideo" :doubleVideo="doubleVideo" :openForceExam="openForceExam"
+                    <entryComponent :singleItem="item" :openVideo="openVideo" :doubleVideo="doubleVideo" :openForceExam="openForceExam"
                     :eagle="room_info.eagle_eye"></entryComponent>
                 </li>
             </ul>
@@ -40,7 +40,6 @@ import Bus from '@/utils/bus.js';
 export default {
     data() {
         return {
-
             room_info: {},
             role: "",
             permitIsEmpty: true,
@@ -53,9 +52,7 @@ export default {
             entryIndex: 0,     // 某个考生在考生列表的索引值
             whole_list: [],    // 所有考生列表
             entry_list: [],    // 考生数组,
-            fixed_list: [],     // 存放钉住考生
             doubleVideo: false,
-            entryVideo: {},
             searchData: "",
             searching: false,
             monitorError: false,
@@ -68,9 +65,6 @@ export default {
     components: {
         entryLog, eagleLog, navHeader, searchEntry, entryComponent
     },
-    mounted() {
-        this.initMonitorRoom('init');
-    },
     created() {
         this.role = this.$route.query.role;
         this.$store.commit('SAVE_ROLE', this.role);
@@ -79,6 +73,15 @@ export default {
         } else {
             this.openVideo = true; this.endExam = true;
         }
+    },
+    mounted() {
+        this.$nextTick(function () {
+            this.initMonitorRoom('init');
+        })    
+    },
+    destroyed() {
+        this.entryInfo = [];
+        clearInterval(this.timeClock)
     },
     computed: {
         ...mapState({ global: state=>state.global })
@@ -152,7 +155,6 @@ export default {
                     this.action = action;
                     res.data.eagle_eye = that.room_info.eagle_eye;
                     res.data.audio_monitor = that.room_info.audio_monitor;
-                    res.data.isVideo = false;
                     res.data.pinup = false;
                     res.data.openSound = false;
                     res.data.openMessageModal = false;
@@ -189,8 +191,7 @@ export default {
             that.destroySingleEntry("prev");
         },
         getNextSingle() {
-            let singleLi = $('.room-video-li');
-            if (singleLi.length > 4) { this.autoToggleSingle(); }
+            if(this.entryInfo.length > 4) { this.autoToggleSingle(); }
         },
         autoToggleSingle() {
             let that = this,

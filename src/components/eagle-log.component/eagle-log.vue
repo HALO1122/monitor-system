@@ -27,6 +27,7 @@
 
 <script>
 import Bus from '@/utils/bus.js';
+import { getSingleEntry } from '@/utils/api.js';
 const Peer = require('simple-peer');
 export default {
     name: "eagle-log",
@@ -36,6 +37,7 @@ export default {
             eagleStatus: "",
             eagleTip: this.$t('monitor.connecting'),
             destroyPeer: null,
+            eaglereconnecttimer: null,
             ops: {
                 vuescroll: {},
                 scrollPanel: {},
@@ -84,7 +86,8 @@ export default {
         this.changeLog();
     },
     destroyed() {
-        if (this.destroyPeer != null) this.destroyPeer.destroy(); 
+        if (this.destroyPeer != null) this.destroyPeer.destroy();
+        this.clearTimer(this.eaglereconnecttimer)
     },
     methods: {
         init() {
@@ -138,6 +141,7 @@ export default {
             });
 
             peer.on('connect', function() {
+                that.clearTimer(that.eaglereconnecttimer)
                 console.log('peer------eagle_connect');
             });
 
@@ -156,6 +160,7 @@ export default {
                 console.log('peer------eagle_closed');
             });
             peer.on('error', function(error) {
+                that.eagleCloseReconnect();
                 console.log('error: ',error);
             });
             // make the call
@@ -166,6 +171,27 @@ export default {
             }
             console.log(pkt, 'pkt')
             that.$socket.emit("message", pkt)
+        },
+        // 考生鹰眼peer断开之后重连
+        eagleCloseReconnect() {
+            let that = this;
+            that.eaglereconnecttimer = setInterval(function() {
+                getSingleEntry({ data: {"permit": that.logs.permit} }).then(res => {
+                    if (res.code == 200) {
+                        that.connect(res.data.eagle_socket_id, that.$refs);
+                        console.log('鹰眼20s 重连');
+                    }
+                }).catch(() => {
+                    that.clearTimer(that.eaglereconnecttimer);
+                })
+            }, 20000)
+        },
+        // 清除定时器
+        clearTimer(timer){
+            if (timer){
+                clearInterval(timer);
+                timer = null;
+            } 
         }
     }
 }

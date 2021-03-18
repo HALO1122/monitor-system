@@ -96,3 +96,13 @@ export function forcedExam (config) {
     }
     return axiosConfig(Object.assign({}, Obj, config))
 }
+
+// 结束考试
+export function monitorRoomEnd (config) {
+    console.log(config, 'config')
+    let Obj = {
+        url: '/monitor/session/3660/room/'+`${store.state.global.roomId}`+'/monitor_room_end/',
+        method: 'POST'
+    }
+    return axiosConfig(Object.assign({}, Obj, config))
+}
