@@ -2,7 +2,12 @@
     display: flex;
     justify-content: space-between;
 }
-
+.video-loading-wrap{
+    position: absolute;
+    top: 120px;
+    left: 124px;
+    font-size: 18px;
+}
     .video-entry-content{
         height: 285px;
         border-top-left-radius: 16px;

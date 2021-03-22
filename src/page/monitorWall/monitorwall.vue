@@ -99,7 +99,7 @@ export default {
                     that.permitIsEmpty = false;
                     that.whole_list = res.entries_online;
                     if(action == 'init') { // 初始渲染5个考生
-                        that.entry_list = that.whole_list.slice(this.entryIndex, 5);
+                        that.entry_list = res.entries_online.slice(this.entryIndex, 5);
                         that.saveSocketId();
                         that.initStudentVideo(that.entry_list, 'all');
                         that.countDown();
@@ -130,7 +130,6 @@ export default {
                     if (that.timerNum == 0) { 
                         that.timerNum = 10;
                         that.autoRefresh();                 
-                        // clearInterval(that.timeClock)
                     }
                 } else {
                     that.timerNum = that.timerNum;
@@ -170,51 +169,54 @@ export default {
             })
         },
         autoRefresh() {
-            if(this.entryInfo.length > 4) {
+            if(this.whole_list.length > 4) {
                 this.autoToggleSingle();
             }
         },
         getPrevSingle() {
-            let that = this;
+            let that = this,
+                fixedList = [],
+                notFixedList = [],
+                newList = [];
             that.entry_list = [];
-    
 
-            that.whole_list = [];
-            that.entryInfo.filter(item => {
-                if (!item.pinup) that.whole_list.push(item.permit)
-            });
+            // 过滤钉住的考生
+            that.entryInfo.filter(item => { if (item.pinup) {fixedList.push(item.permit)} else notFixedList.push(item.permit) });
+            fixedList.length != 0 ? newList = that.whole_list.filter((permit) => 
+                !fixedList.some((item) => permit === item)) : newList = that.whole_list;
             
-            console.log(that.whole_list[that.whole_list.length - 1], 'entry_list')
-
-            that.entry_list.push(that.whole_list[that.whole_list.length - 1]);
-            that.initStudentVideo(that.entry_list, 'prev');
-            that.destroySingleEntry("prev");
+            that.entryIndex == undefined ? that.entryIndex = 0 : that.entryIndex = that.findEntryIndex(newList, notFixedList[0]);
+    
+            if (that.entryIndex != 0) {
+                that.entry_list = newList.slice(that.entryIndex-1, that.entryIndex);
+                that.initStudentVideo(that.entry_list, 'prev');
+                that.destroySingleEntry("prev");
+            }
         },
         getNextSingle() {
-            if(this.entryInfo.length > 4) { this.autoToggleSingle(); }
+            if(this.whole_list.length > 4) { this.autoToggleSingle(); }
         },
         autoToggleSingle() {
             let that = this,
-                singleLi = $('.room-video-li'),
-                lastPermit = that.entryInfo[singleLi.length - 1].permit;
+                lastPermit = that.entryInfo[that.entryInfo.length - 1].permit,
+                fixedList = [],
+                newList = [];
             that.entry_list = [];
-            that.whole_list = [];
 
             // 过滤钉住的考生
-            that.entryInfo.filter(item => {
-                if (!item.pinup) that.whole_list.push(item.permit);
-            });
-            // 最后一个考生在列表中的索引值、浏览到最后一个重新请求列表
-            that.entryIndex == undefined ? that.entryIndex = 0 : that.entryIndex = that.findEntryIndex(that.whole_list, lastPermit);
+            that.entryInfo.filter(item => { if (item.pinup) fixedList.push(item.permit) });
+            fixedList.length != 0 ? newList = that.whole_list.filter((permit) => 
+                !fixedList.some((item) => permit === item)) : newList = that.whole_list;
 
-            if (that.entryIndex != that.whole_list.length - 1) {
-                that.entry_list = that.whole_list.slice(that.entryIndex+1, that.entryIndex+2);
+            // 最后一个考生在列表中的索引值、浏览到最后一个重新请求列表
+            that.entryIndex == undefined ? that.entryIndex = 0 : that.entryIndex = that.findEntryIndex(newList, lastPermit);
+
+            if (that.entryIndex != newList.length - 1) {
+                that.entry_list = newList.slice(that.entryIndex+1, that.entryIndex+2);
             } else {
                 that.initMonitorRoom('reload');
-                that.entry_list = that.whole_list.slice(0, 1);
+                that.entry_list = newList.slice(0, 1);
             }
-
-            console.log(that.entry_list, 'that.entry_list')
             if (that.entry_list.length != 0) that.initStudentVideo(that.entry_list, 'next');
             that.destroySingleEntry("next");
 

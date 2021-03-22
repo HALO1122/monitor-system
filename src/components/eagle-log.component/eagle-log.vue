@@ -8,16 +8,17 @@
         <ul class="eagle-entry-log">
             <vue-scroll :ops="ops">
                 <li v-for="(subitem,index) in logs.entry_log" :key="index">
-                    <div v-if="subitem.login"><p class="login">登录考试</p><p>{{subitem.login}}</p></div>
-                    <div v-if="subitem.eagle_login"><p class="login">进入鹰眼</p><p>{{subitem.eagle_login}}</p></div>
-                    <div v-if="subitem.error_screen"><p class="monitor">截屏异常</p><p>{{subitem.error_screen.time}}</p></div>
-                    <div v-if="subitem.entry_message"><p class="login">监考发消息</p><p>{{subitem.entry_message.time}}</p></div>
-                    <div v-if="subitem.entry_call"><span class="login">监考通话</span><p>{{subitem.entry_call.time}}</p></div>
-                    <div v-if="subitem.leave"><span class="leave">离开考试</span><p>{{subitem.leave}}</p></div>
-                    <div v-if="subitem.end"><span class="end">交卷</span><p>{{subitem.end}}</p></div>
-                    <div v-if="subitem.force"><span class="force">强制交卷</span><p>{{subitem.force}}</p></div>
-                    <div v-if="subitem.timeout"><span class="timeout">自动收卷</span><p>{{subitem.timeout}}</p></div>
-                    <div v-if="subitem.out"><span class="out">离开页面</span><p>{{subitem.out}}</p></div>
+                    <div v-if="subitem.login"><p class="login">{{ $t('monitor.login') }}</p><p>{{subitem.login}}</p></div>
+                    <div v-if="subitem.eagle_login"><p class="login">{{ $t('monitor.eagle') }}</p><p>{{subitem.eagle_login}}</p></div>
+                    <div v-if="subitem.error_screen"><p class="monitor">{{ $t('monitor.screen') }}</p><p>{{subitem.error_screen.time}}</p></div>
+                    <div v-if="subitem.entry_message"><p class="login">{{ $t('monitor.proctor_message') }}</p><p>{{subitem.entry_message.time}}</p></div>
+                    <div v-if="subitem.entry_call"><span class="login">{{ $t('monitor.proctor_call') }}</span><p>{{subitem.entry_call.time}}</p></div>
+                    <div v-if="subitem.leave"><span class="leave">{{ $t('monitor.leave') }}</span><p>{{subitem.leave}}</p></div>
+                    <div v-if="subitem.end"><span class="end">{{ $t('monitor.end') }}</span><p>{{subitem.end}}</p></div>
+                    <div v-if="subitem.cancelEnd"><span class="end">{{ $t('monitor.cancelEnd') }}</span><p>{{subitem.cancelEnd}}</p></div>
+                    <div v-if="subitem.force"><span class="force">{{ $t('monitor.force') }}</span><p>{{subitem.force}}</p></div>
+                    <div v-if="subitem.timeout"><span class="timeout">{{ $t('monitor.timeout') }}</span><p>{{subitem.timeout}}</p></div>
+                    <div v-if="subitem.out"><span class="out">{{ $t('monitor.out') }}</span><p>{{subitem.out}}</p></div>
                 </li>
             </vue-scroll>
         </ul>
@@ -63,6 +64,17 @@ export default {
     computed: {
         logs (){
             return this.eagleLog
+        },
+        entryStatus() {
+            return this.entryStatusShow
+        }
+    },
+    watch: {
+        entryStatus(status) {
+            if (status) {
+                if (this.destroyPeer != null) this.destroyPeer.destroy();
+                this.clearTimer(this.eaglereconnecttimer)
+            }
         }
     },
     props: {
@@ -77,6 +89,10 @@ export default {
         to_peers: {
             type: Object,
             dafault: {}            
+        },
+        entryStatusShow: {
+            type: Boolean,
+            dafault: false
         }
     },
     mounted() {

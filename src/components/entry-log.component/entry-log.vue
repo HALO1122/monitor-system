@@ -37,6 +37,7 @@
                 <div class="entry-log-type" v-if="log.entry_call"><span class="login">{{ $t('monitor.proctor_call') }}</span><p>{{log.entry_call.time}}</p></div>
                 <div class="entry-log-type" v-if="log.leave"><span class="leave">{{ $t('monitor.leave') }}</span><p>{{log.leave}}</p></div>
                 <div class="entry-log-type" v-if="log.end"><span class="end">{{ $t('monitor.end') }}</span><p>{{log.end}}</p></div>
+                <div class="entry-log-type" v-if="log.cancelEnd"><span class="end">{{ $t('monitor.cancelEnd') }}</span><p>{{log.cancelEnd}}</p></div>
                 <div class="entry-log-type" v-if="log.force"><span class="force">{{ $t('monitor.force') }}</span><p>{{log.force}}</p></div>
                 <div class="entry-log-type" v-if="log.timeout"><span class="timeout">{{ $t('monitor.timeout') }}</span><p>{{log.timeout}}</p></div>
                 <div class="entry-log-type" v-if="log.out"><span class="out">{{ $t('monitor.out') }}</span><p>{{log.out}}</p></div>

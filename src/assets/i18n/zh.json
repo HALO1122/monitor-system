@@ -49,6 +49,7 @@
         "timeout": "自动收卷",
         "out": "离开页面",
         "end": "交卷",
+        "cancelEnd": "取消交卷",
 		"force": "强制交卷",
         "type": "类型：",
 		"content": "内容：",
@@ -94,5 +95,10 @@
         "_eagleVideo": "第二监控视角",
         "handsup": "举手"
     },
-    "endTip": "感谢您完成监考！"
+    "endTip": "感谢您完成监考！",
+    "know": "我知道了",
+    "forceTip": "强制收卷后考生不能继续考试，确定要收卷吗？",
+    "forceSuccess": "您已被强制收卷！",
+    "forceFail": "考生强制收卷失败,请稍后重试！",
+    "examSuccess": "该考生已完成考生！"
 }

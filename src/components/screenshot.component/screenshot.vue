@@ -77,9 +77,6 @@ export default {
                     console.log('controlMainScreenshot')
                     setTimeout(function() {
                         this.canvas = $("#Canvas")[0];
-                        // that.initCanvas(target.video)
-                        console.log(this.canvas,'this.canvas')
-                        console.log(target.video,'target.video')
                         let ctx = this.canvas.getContext("2d");
                         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                         ctx.drawImage(target.video, 0, 0, this.canvas.width, this.canvas.height);
@@ -87,22 +84,17 @@ export default {
                 }
             });
         },
-        initCanvas(data) {
-            this.canvas = $("#Canvas")[0];
-            let ctx = this.canvas.getContext("2d");
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx.drawImage(data, 0, 0, this.canvas.width, this.canvas.height);
-        },
         radioChange(e) {
             this.cutContent = e.target.value;
         },
         screenshotVideo() {
             let cutData ={
-                "image_base64_str": this.canvas.toDataURL('image/jpeg', 0.6),
+                "image_base64_str": $("#Canvas")[0].toDataURL('image/jpeg', 0.6),
                 "mismatch_type": this.cutContent,
                 "permit": this.item.permit,
                 "remark": this.remark
             }
+            console.log(cutData, 'cutData')
             if (cutData.mismatch_type != "" && cutData.permit != "") {
                 screenshotEntry({ data: cutData }).then((res)=> {
                     if(res.code == 200) {

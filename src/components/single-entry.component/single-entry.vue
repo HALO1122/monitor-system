@@ -1,6 +1,6 @@
 <template>
     <div class="single-entry" ref="singleLi">
-        <span class="video-loading-wrap"></span>
+        <span class="video-loading-wrap" v-if="entryStatusShow">{{entryStatus}}</span>
         <div class="video-entry-content">
             <p class="video-tag-tip">
                 <i class="ez-icon-font icon-monitor">&#xe73e;</i><span class="icon-monitor">{{videoStatus}}</span>
@@ -26,7 +26,7 @@
         </div>
         <div class="eagle-event-block" v-if="item.eagle_eye">
             <p class="single-video" @click="togglesEventBlock(item, 'two')"></p>
-            <eagle-log :eagleLog="item" ref="_eagleLog" :peers="peers" :to_peers="to_peers"></eagle-log>
+            <eagle-log :eagleLog="item" ref="_eagleLog" :peers="peers" :to_peers="to_peers" :entryStatusShow="entryStatusShow"></eagle-log>
         </div>
         <div class="entry-information">
             <p><span>{{item.permit}} | {{item.full_name}}</span>
@@ -43,6 +43,9 @@
         <sendMessage v-if="sendMsgData.openMessageModal" :sendMsgData="sendMsgData" :eagle_eye="eagle"></sendMessage>
         <screenshot v-if="screenshotData.openScreenshotModal" :screenshotData="screenshotData"></screenshot>
         <sendVideo  v-if="callVideoData.openVideoCallModal" :callVideoData="callVideoData" ></sendVideo>
+
+        <alertComponent :btnType="btnType" :alertContent="alertContent" :alertIsShow="alertIsShow"
+            @confirmEvent="confirmForceExam" @cancelEvent="cancelForceExam"></alertComponent>
     </div>
 </template>
 
@@ -52,6 +55,7 @@ import eagleLog from '@/components/eagle-log.component/eagle-log';
 import sendMessage from '@/components/send-message.component/send-message';
 import screenshot from '@/components/screenshot.component/screenshot';
 import sendVideo from '@/components/send-video.component/send-video';
+import alertComponent from '@/components/alert-component'
 import Bus from '@/utils/bus.js';
 import { forcedExam, getSingleEntry } from '@/utils/api.js';
 const Peer = require('simple-peer');
@@ -68,7 +72,12 @@ export default {
             callVideoData: {},
             destroyPeer: null,
             reconnecttimer: null,
-            roomHandsupList: []
+            roomHandsupList: [],
+            btnType: false,
+            alertIsShow: false,
+            alertContent: this.$t('forceTip'),
+            entryStatusShow: false,
+            entryStatus: ""
         }
     },
     sockets: {
@@ -100,17 +109,17 @@ export default {
                 case "student_cancel_handup":
                     this.cancelHandup(data);
                     break;
-                case "force_end_exam_sucess":
-                    this.forceExamSucess(data);
-                    break;
                 case "force_end_exam_fail":
-                    this.forceExamFail(data);
+                    this.alertContent = data.msg;
+                    break;
+                case "end_exam_success":
+                    this.endExamSuccess(data);
                     break;
             }
         }
     },
     components: {
-        entryLog, eagleLog, sendMessage, screenshot, sendVideo
+        entryLog, eagleLog, sendMessage, screenshot, sendVideo, alertComponent
     },
     props: {
         singleItem: {
@@ -202,27 +211,39 @@ export default {
             Bus.$emit('busTimerPause', {"status": false} );
         },
         // 强制收卷
-        forceExam(item) {
-            console.log(item)
+        forceExam() {
+            this.alertIsShow = true;
+            Bus.$emit('busTimerPause', {"status": false} );
+        },
+        confirmForceExam() {
             let	pkt = {
                 type: "force_end_exam",
-                to: item.socket_id,
+                to: this.singleItem.socket_id,
                 from: this.$socket.id,
                 msg: ''
-            }
-            forcedExam({ data: {"permit": item.permit} }).then((res)=> {
-                that.$socket.emit("message", pkt)
-                this.forceExamSucess({"permit": endExamPermit})
+            }, that = this;
+            forcedExam({ data: {"permit": that.singleItem.permit} }).then(()=> {
+                that.$socket.emit("message", pkt);
+                that.forceExamSucess();
             }).catch((xhr) => {
-                let data = {"msg": "考生强制收卷失败,请稍后重试！"}
-                this.forceExamFail(data);
+                this.alertContent =  this.$t('forceFail');
             })
         },
-        forceExamSucess(data) {
-            console.log(data, 'forceExamSucess')
+        forceExamSucess() {
+            this.btnType = true;
+            this.entryStatusShow = true;
+            this.destroyPeer.destroy();
+            this.clearTimer(this.reconnecttimer);
+            this.entryStatus = this.$t('forceSuccess');
+            this.alertContent =  this.$t('forceSuccess');
+            Bus.$emit('busTimerPause', {"status": true} );
         },
-        forceExamFail(data) {
-            console.log(data, 'forceExamFail')
+        cancelForceExam() {
+            this.alertIsShow = false;
+        },
+        endExamSuccess(data) {
+            this.entryStatusShow = true;
+            this.entryStatus = this.$t('examSuccess');
         },
         completeHandup(data) {
             let hash = {};
@@ -230,8 +251,6 @@ export default {
                 hash[item.permit] ? '' : hash[item.permit] = true && temp.unshift(item);
                 return temp
             }, [])
-
-			console.log(this.roomHandsupList, 'roomHandsupList')
             Bus.$emit('handshupCallvideo', {"data": this.roomHandsupList} );
         },
         cancelHandup(data) {
@@ -240,7 +259,6 @@ export default {
                     this.roomHandsupList.splice(index,1);
                 }
             })
-            console.log(this.roomHandsupList, 'this.roomHandsupList')
             Bus.$emit('handshupCallvideo', {"data": this.roomHandsupList} );
         },
         togglesEventBlock(item, toggles) {
