@@ -100,7 +100,6 @@ export default {
         },
         // 监考拍照
         confirm_photo(type) {
-            let roomId = this.global.roomId;
             if(!type) {
                 this.vidoeOrPhoto = !this.vidoeOrPhoto;
                 this.takephoto = false;
@@ -109,7 +108,6 @@ export default {
                 saveProctorPhoto({ data: msg }).then(() => {
                     const videoElement = document.querySelector('#camera_view');
                     stopTrack(videoElement.srcObject);
-                    stopTrack()
                     this.$router.push('/monitorwall?role=proctor');
                 })
                 .catch(error => {

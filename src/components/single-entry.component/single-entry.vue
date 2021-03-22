@@ -55,7 +55,7 @@ import eagleLog from '@/components/eagle-log.component/eagle-log';
 import sendMessage from '@/components/send-message.component/send-message';
 import screenshot from '@/components/screenshot.component/screenshot';
 import sendVideo from '@/components/send-video.component/send-video';
-import alertComponent from '@/components/alert-component'
+import alertComponent from '@/components/alert-component';
 import Bus from '@/utils/bus.js';
 import { forcedExam, getSingleEntry } from '@/utils/api.js';
 const Peer = require('simple-peer');
@@ -183,7 +183,6 @@ export default {
         },
         // 监考发送消息
         sendMessage(item) {
-            console.log(item, 'item')
             item.openMessageModal = true;
             this.sendMsgData = item;
             Bus.$emit('busTimerPause', {"status": false} );
@@ -203,7 +202,6 @@ export default {
 
             item.studentStream = video.srcObject;
             if (eagleVideo != undefined && item.eagle_eye) {
-                console.log(eagleVideo.$refs.eagle_video, 'eagleVideo.$refs.eagle_video')
                 item.eagleStream = eagleVideo.$refs.eagle_video.srcObject;
             }
             item.openVideoCallModal = true;
@@ -243,6 +241,7 @@ export default {
         },
         endExamSuccess(data) {
             this.entryStatusShow = true;
+            this.clearTimer(this.reconnecttimer);
             this.entryStatus = this.$t('examSuccess');
         },
         completeHandup(data) {
@@ -313,7 +312,9 @@ export default {
             var pkt = {
                 type: "call",
                 to: res.socket_id,
-                from_peer: peer._id
+                from_peer: peer._id,
+                from: that.$socket.id,
+                msg: "proctor_call"
             }
             that.$socket.emit("message", pkt)
         },

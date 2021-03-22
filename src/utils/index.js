@@ -1,5 +1,8 @@
 var videoSource, // 视频设备id
-    audioSource; // 音频设备id
+    audioSource, // 音频设备id
+    deviceStatus = true,
+    videoDeviceInfosStatus = false, // 设备信息
+    audioDeviceInfosStatus = false; // 设备信息
 
 
 export function getStream() {
@@ -27,10 +30,11 @@ export function getStream() {
                 volume: 1.0
             }
         };
-        return navigator.mediaDevices.getUserMedia(constraints)
-        .then( gotStream.bind(this) )
-        .catch((err) => {
-            console.log(err)
+        return navigator.mediaDevices.getUserMedia(constraints).then(
+            gotStream.bind(this)
+        ).catch((err) => {
+            console.log(err);
+            deviceStatus = false;
         })
     }
 }
@@ -42,7 +46,6 @@ export function getDevices() {
 
 // 获取浏览器媒体设备信息
 export function gotDevices(deviceInfos) {
-    console.log(deviceInfos, 'deviceInfos')
     let videoSelect = document.querySelector('select#videoSource'),
         audioSelect = document.querySelector('select#audioSource');
 
@@ -50,13 +53,26 @@ export function gotDevices(deviceInfos) {
         const option = document.createElement('option');
         option.value = deviceInfo.deviceId;
         if (deviceInfo.kind === 'videoinput') {
+            videoDeviceInfosStatus = true;
             option.text = deviceInfo.label || `Camera ${videoSelect.length + 1}`;
             videoSelect.appendChild(option);
         } else if (deviceInfo.kind === 'audioinput') {
+            audioDeviceInfosStatus = true;
             option.text = deviceInfo.label || ` ${audioSelect.length + 1}`;
             audioSelect.appendChild(option);
         }
     }
+}
+
+export function deviceSource() {
+    return {
+        video: videoDeviceInfosStatus,
+        audio: audioDeviceInfosStatus
+    }
+}
+
+export function device() {
+    return deviceStatus;
 }
 
 export function gotStream(stream) {
@@ -71,10 +87,10 @@ export function gotStream(stream) {
 // 断开视频流
 export function stopTrack(stream) {
     if (stream) {
-      if (stream.getTracks().length) {
-        for (let track of stream.getTracks()) {
-          track.stop();
+        if (stream.getTracks().length) {
+            for (let track of stream.getTracks()) {
+                track.stop();
+            }
         }
-      }
     }
 }

@@ -49,5 +49,115 @@
             color:#0195ff;
         }
     }
+    .wrap-camera-view{
+        position: fixed;
+        z-index: 99;
+        background: rgba(0,0,0,.3); 
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
+        .camera-view-box{
+            .text-title{
+                i{
+                    position: absolute;
+                    right: 14px;
+                    top: 12px;
+                }
+            }
+            position: absolute;
+            top: 120px; left: 50%;
+            transform: translate(-50%,0);
+            background-color: #fff;
+            padding: 30px 40px;
+            .view-r{
+                #camera_view{
+                    max-width: 350px;
+                    max-height: 322px;
+                    margin: 0 auto;
+                    width: 350px;
+                    height: 260px;
+                    background-color: #000;
+                }
+                .view-box {
+                    display: flex;
+                    .view-browser-icon{margin-left: 8px; color: #FF5534;}
+                    .view-name{ width: 80px; text-align: right; }
+                    .view-middle{ width: calc(100% - 120px); }
+                    .true{ color: #1296DB; }
+                }
+                .view-measure{
+                    display: flex;
+                }
+            }
+        }
+    }
+    .wrap-camera-tip{
+        position: fixed;
+        z-index: 999;
+        background: rgba(0,0,0,.2);
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        .camera-tip{
+            width: 550px;
+            border-radius: 5px;
+            height: 300px;
+            padding: 30px 40px;
+            background: #fff;
+            position: absolute;
+            top: 220px;
+            left: 50%;
+            transform: translate(-50%,0);
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            align-items: center;
+            .camera-track {
+                height: 100px;
+                position: relative;
+                width: 350px;
+                display: flex;
+                align-items: center;
+                flex-direction: row-reverse;
+                .record-flag {
+                    width: 1px;
+                    background: #D2D2D2;
+                    position: absolute;
+                    height: 100%;
+                    right: 0;
+                    p {
+                        position: absolute;
+                        width: 15px;
+                        height: 15px;
+                        left: -6px;
+                        bottom: -14px;                    
+                        border: 5px solid #D2D2D2;
+                        border-radius: 20px;
+                    }
+                }
+                .record-star-inserted{
+                    margin: 1px;
+                    width: 2px !important;
+                    background: #0195ff;
+                }
+            }
+            .record-star {
+                display: flex;
+                align-items: center;
+                flex-direction: row-reverse;
+            }
+            .record-star-inserted {
+                margin: 1.5px;
+                width: 2px !important;
+                height: 1px;
+                background: #0195ff;
+            }
+        }
+    }
+
+
 
 }

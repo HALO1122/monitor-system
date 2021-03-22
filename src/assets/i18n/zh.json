@@ -9,7 +9,19 @@
         "login": "登录",
         "detectBefore":"监考前，请先进行",
         "detect": "设备检测",
-        "errorTip": "姓名和口令不能为空！"
+        "errorTip": "姓名和口令不能为空！",
+        "microSelect": "检测麦克风",
+		"noCameraTip": "检测无有效的视频输入摄像头，请保证监控有效并允许使用您的摄像头！",
+        "browser": "浏览器：",
+        "cameraSelect2": "摄像头：",
+        "microphone": "麦克风：",
+        "videoBandwidth": "下载速度：",
+        "delay": "延迟：",
+        "play": "播放",
+        "stopPlay": "停止播放",
+        "tip1": "提示",
+		"tip2": "您的媒体设备错误，无法找到媒体设备！",
+        "tip3": "检测麦克风期间，系统将录制一段您的声音，您可以在录制好后点击播放声音按钮来确定麦克风是否有效。点击确定按钮后，系统自动开始录音。"
     },
     "role":{
         "select": "请选择您的身份：",
@@ -100,5 +112,5 @@
     "forceTip": "强制收卷后考生不能继续考试，确定要收卷吗？",
     "forceSuccess": "您已被强制收卷！",
     "forceFail": "考生强制收卷失败,请稍后重试！",
-    "examSuccess": "该考生已完成考生！"
+    "examSuccess": "该考生已完成考试！"
 }

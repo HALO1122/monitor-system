@@ -43,7 +43,6 @@ export default {
         }
     },
     mounted() {
-        console.log(this.sendMsgData.openMessageModal);
     },
     props: {
         sendMsgData: {
@@ -60,7 +59,6 @@ export default {
     },
     methods: {
         radioChange(e) {
-            console.log(e)
             if (e.target.value == -1) {
                 this.messageContent = e.target.value;
                 this.customize = true;
